@@ -11,7 +11,7 @@ onMounted(() => {
   messages.value.push({
     id: 'welcome',
     role: 'assistant',
-    content: "Opoo rek, ape nakok opo?"
+    content: "Opoo rek?"
   })
 })
 
