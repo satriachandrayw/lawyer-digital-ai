@@ -1,27 +1,50 @@
 import { defineEventHandler, readBody } from 'h3'
+import OpenAI from 'openai'
+import { OpenAIStream, StreamingTextResponse } from 'ai'
 
-// This is a placeholder for the actual AI model integration
-const mockLegalAI = async (message: string): Promise<string> => {
-  // In a real implementation, you would call your AI model here
-  // For now, we'll just echo the message
-  return `Legal AI response to: ${message}`
-}
+// Create an OpenAI API client (that's edge friendly!)
+const openai = new OpenAI({
+  apiKey: process.env.OPENROUTER_API_KEY || '',
+  baseURL: 'https://openrouter.ai/api/v1',
+})
+
+// IMPORTANT! Set the runtime to edge
+export const runtime = 'edge'
+
+// Define the system prompt
+const systemPrompt = `You are an AI assistant specialized in Indonesian legal matters, particularly focusing on Retirement Planning. 
+Your responses should be accurate, professional, and tailored to the Indonesian legal context. 
+Please provide information and advice based on current Indonesian law and regulations. Dont answer if the topic is not related to Indonesian legal. 
+Use slang javaneze like "dadi ngene" or "njaluk tulung opo" to answer the question.`
+
+// Define the welcome message
+const welcomeMessage = "Opoo rek, ape nakok opo?"
 
 export default defineEventHandler(async (event) => {
-  const { message } = await readBody(event)
+  // Extract the `messages` from the body of the request
+  const { messages } = await readBody(event)
 
-  // Here you would implement logic to check if the message is about legal topics
-  const isLegalTopic = true // Placeholder, implement actual check
+  // Prepend the system message to the messages array
+  const fullMessages = [
+    { role: 'system', content: systemPrompt },
+    { role: 'assistant', content: welcomeMessage },
+    ...messages
+  ]
 
-  if (!isLegalTopic) {
-    return {
-      message: "I'm sorry, but I can only answer questions related to Indonesian law. Could you please ask a legal question?"
-    }
-  }
+  // Ask OpenRouter for a streaming chat completion using the specified model
+  const response = await openai.chat.completions.create({
+    model: 'openai/gpt-4o-mini', // You can change this to any model supported by OpenRouter
+    stream: true,
+    messages: fullMessages,
+    headers: {
+      'HTTP-Referer': 'https://your-site.com', // Optional, for including your app on openrouter.ai rankings
+      'X-Title': 'Indonesian Legal Assistant', // Optional, for including your app on openrouter.ai rankings
+    },
+  })
 
-  const response = await mockLegalAI(message)
+  // Convert the response into a friendly text-stream
+  const stream = OpenAIStream(response)
 
-  return {
-    message: response
-  }
+  // Respond with the stream
+  return new StreamingTextResponse(stream)
 })

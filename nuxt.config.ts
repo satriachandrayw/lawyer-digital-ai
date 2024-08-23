@@ -30,5 +30,8 @@ export default defineNuxtConfig({
      * @default "./components/ui"
      */
     componentDir: './components/ui'
+  },
+  runtimeConfig: {
+    openrouterApiKey: process.env.OPENROUTER_API_KEY
   }
 })

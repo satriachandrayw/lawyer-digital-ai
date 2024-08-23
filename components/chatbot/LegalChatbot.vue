@@ -1,38 +1,45 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted, watch } from 'vue'
+import { useChat } from 'ai/vue'
 
-const userInput = ref('')
-const chatHistory = ref<{ role: 'user' | 'bot', content: string }[]>([])
-const isLoading = ref(false)
+const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat()
 
-const sendMessage = async () => {
-  if (!userInput.value.trim()) return
+const typingIndicator = ref('...')
 
-  const userMessage = userInput.value
-  chatHistory.value.push({ role: 'user', content: userMessage })
-  userInput.value = ''
-  isLoading.value = true
+onMounted(() => {
+  // Add the welcome message to the messages array when the component mounts
+  messages.value.push({
+    id: 'welcome',
+    role: 'assistant',
+    content: "Opoo rek, ape nakok opo?"
+  })
+})
 
-  try {
-    const response = await $fetch('/api/chat', {
-      method: 'POST',
-      body: { message: userMessage }
-    })
-
-    chatHistory.value.push({ role: 'bot', content: response.message })
-  } catch (error) {
-    console.error('Error:', error)
-    chatHistory.value.push({ role: 'bot', content: 'Sorry, I encountered an error. Please try again.' })
-  } finally {
-    isLoading.value = false
-  }
+// Animate the typing indicator
+const animateTyping = () => {
+  let dots = 0
+  return setInterval(() => {
+    typingIndicator.value = '.'.repeat(dots % 4)
+    dots++
+  }, 300)
 }
+
+let typingAnimation
+
+// Start and stop the typing animation based on isLoading
+watch(isLoading, (loading) => {
+  if (loading) {
+    typingAnimation = animateTyping()
+  } else {
+    clearInterval(typingAnimation)
+  }
+})
 </script>
 
 <template>
   <div class="chatbot-container flex flex-col h-[600px] w-full max-w-md mx-auto border rounded-lg shadow-lg">
     <ScrollArea class="flex-grow p-4">
-      <div v-for="(message, index) in chatHistory" :key="index" class="mb-4">
+      <div v-for="message in messages" :key="message.id" class="mb-4">
         <div :class="[
           'p-3 rounded-lg',
           message.role === 'user' ? 'bg-primary text-primary-foreground ml-auto' : 'bg-muted',
@@ -41,16 +48,26 @@ const sendMessage = async () => {
           {{ message.content }}
         </div>
       </div>
+      <div v-if="isLoading" class="typing-indicator mb-4">
+        <div :class="[
+          'p-3 rounded-lg',
+          'bg-muted',
+          'max-w-[80%]'
+        ]">
+          <strong>AI:</strong> Mengetik{{ typingIndicator }}
+        </div>
+      </div>
     </ScrollArea>
     <div class="p-4 border-t">
-      <form @submit.prevent="sendMessage" class="flex space-x-2">
+      <form @submit.prevent="handleSubmit" class="flex space-x-2">
         <Input
-          v-model="userInput"
+          v-model="input"
           placeholder="Ask a legal question..."
+          @input="handleInputChange"
           class="flex-grow"
         />
-        <Button type="submit" :disabled="isLoading">
-          {{ isLoading ? 'Sending...' : 'Send' }}
+        <Button type="submit" :disabled="input.length === 0">
+          Send
         </Button>
       </form>
     </div>
