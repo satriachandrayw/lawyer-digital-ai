@@ -1,4 +1,5 @@
 import { fileURLToPath } from 'url'
+import VitePluginCommonjs from 'vite-plugin-commonjs'
 
 export default defineNuxtConfig({
   compatibilityDate: '2024-04-03',
@@ -12,6 +13,7 @@ export default defineNuxtConfig({
   },
   alias: {
     '@': fileURLToPath(new URL('./', import.meta.url)),
+    'pdfjs-dist': 'pdfjs-dist/build/pdf.js'
   },
   modules: [
     '@nuxtjs/color-mode',
@@ -33,5 +35,26 @@ export default defineNuxtConfig({
   },
   runtimeConfig: {
     openrouterApiKey: process.env.OPENROUTER_API_KEY
+  },
+  nitro: {
+    storage: {
+      uploads: {
+        driver: 'fs',
+        base: './uploads'
+      }
+    }
+  },
+  build: {
+    transpile: ['pdfjs-dist']
+  },
+  vite: {
+    optimizeDeps: {
+      include: ['pdfjs-dist']
+    },
+    plugins: [
+      VitePluginCommonjs({
+        filter: (id) => id.includes('pdfjs-dist')
+      })
+    ]
   }
 })

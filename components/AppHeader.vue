@@ -5,7 +5,8 @@ import { useColorMode } from '@vueuse/core'
 const colorMode = useColorMode()
 
 const tabs = [
-  { name: 'Home', href: '/' }
+  { name: 'Home', href: '/' },
+  { name: 'Upload Respon Gugatanmu', href: '/upload-respon-gugatanmu' }
 ]
 
 const activeTab = ref(tabs[0])

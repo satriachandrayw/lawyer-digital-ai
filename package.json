@@ -20,6 +20,8 @@
     "lucide-vue-next": "^0.435.0",
     "nuxt": "^3.13.0",
     "openai": "^4.56.0",
+    "pdf-parse": "^1.1.1",
+    "pdfjs-dist": "^3.4.120",
     "radix-vue": "^1.9.4",
     "shadcn-nuxt": "^0.10.4",
     "shadcn-vue": "^0.10.5",
@@ -29,8 +31,11 @@
   },
   "devDependencies": {
     "@nuxtjs/tailwindcss": "^6.12.1",
+    "@types/pdf-parse": "^1.1.4",
+    "@types/pdfjs-dist": "^2.10.377",
     "autoprefixer": "latest",
     "postcss": "latest",
-    "tailwindcss": "latest"
+    "tailwindcss": "latest",
+    "vite-plugin-commonjs": "^0.10.1"
   }
 }
