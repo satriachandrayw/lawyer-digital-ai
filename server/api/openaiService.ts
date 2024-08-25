@@ -1,5 +1,5 @@
 import OpenAI from 'openai'
-import { OpenAIStream, StreamingTextResponse } from 'ai'
+import { OpenAIStream } from 'ai'
 
 // Create an OpenAI API client (that's edge friendly!)
 export const openai = new OpenAI({
@@ -13,21 +13,42 @@ export const processWithOpenAI = async (messages, options = {}) => {
     stream: true,
     headers: {
       'HTTP-Referer': 'https://your-site.com',
-      'X-Title': 'Indonesian Legal Assistant',
+      'X-Title': 'Asisten Hukum Indonesia',
     },
   }
+
+  // Add a message to specify the language
+  messages.unshift({ role: 'system', content: 'Tolong berikan respons dalam bahasa Indonesia.' })
 
   const mergedOptions = { ...defaultOptions, ...options, messages }
 
   const response = await openai.chat.completions.create(mergedOptions)
 
+  console.log(response);
+  
   return OpenAIStream(response)
 }
 
-export const streamToString = async (stream) => {
-  const chunks = []
-  for await (const chunk of stream) {
-    chunks.push(chunk)
+// New function for non-streaming response
+export const processWithOpenAIFull = async (messages, options = {}) => {
+  const defaultOptions = {
+    model: 'openai/gpt-4o-mini',
+    stream: false,
+    headers: {
+      'HTTP-Referer': 'https://your-site.com',
+      'X-Title': 'Asisten Hukum Indonesia',
+    },
   }
-  return chunks.join('')
+
+  // Add a message to specify the language
+  messages.unshift({ role: 'system', content: 'Tolong berikan respons dalam bahasa Indonesia.' })
+
+  const mergedOptions = { ...defaultOptions, ...options, messages }
+
+  const response = await openai.chat.completions.create(mergedOptions)
+
+  console.log(response);
+  
+  // Return the full text response
+  return response.choices[0].message.content
 }

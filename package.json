@@ -27,6 +27,7 @@
     "shadcn-vue": "^0.10.5",
     "tailwind-merge": "^2.5.2",
     "tailwindcss-animate": "^1.0.7",
+    "tesseract.js": "^5.1.1",
     "vue": "latest"
   },
   "devDependencies": {

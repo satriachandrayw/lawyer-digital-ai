@@ -1,17 +1,18 @@
 import { defineEventHandler, readBody } from 'h3'
-import { processWithOpenAI, streamToString } from './openaiService'
+import { processWithOpenAIFull } from './openaiService'
 
-const systemPrompt = `You are an AI assistant specialized in analyzing legal documents. 
-Please provide a summary and key points of the following legal document. 
-Your response should be accurate, professional, and tailored to the Indonesian legal context.`
+const systemPrompt = `Anda adalah asisten AI yang ahli dalam menganalisis dokumen hukum Indonesia, khususnya surat gugatan.
+Tolong berikan ringkasan dan poin-poin kunci dari surat gugatan berikut ini.
+Respons Anda harus akurat, profesional, dan disesuaikan dengan konteks hukum Indonesia.
+Gunakan bahasa Indonesia dalam respons Anda.`
 
 export default defineEventHandler(async (event) => {
-  const { fileUrl, text } = await readBody(event)
+  const { text } = await readBody(event)
 
-  if (!fileUrl || !text) {
+  if (!text) {
     throw createError({
       statusCode: 400,
-      statusMessage: 'File URL and text are required',
+      statusMessage: 'Text is required',
     })
   }
 
@@ -21,15 +22,13 @@ export default defineEventHandler(async (event) => {
       { role: 'user', content: text },
     ]
 
-    const stream = await processWithOpenAI(messages, {
+    const response = await processWithOpenAIFull(messages, {
       headers: {
         'X-Title': 'Indonesian Legal Document Analyzer',
       },
     })
 
-    const result = await streamToString(stream)
-
-    return { response: result }
+    return { response }
   } catch (error) {
     console.error('Error processing PDF:', error)
     throw createError({
