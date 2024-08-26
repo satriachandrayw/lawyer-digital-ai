@@ -1,15 +1,23 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useColorMode } from '@vueuse/core'
+import { useRoute } from 'vue-router'
 
 const colorMode = useColorMode()
+const route = useRoute()
 
 const tabs = [
   { name: 'Home', href: '/' },
   { name: 'Upload Respon Gugatanmu', href: '/upload-respon-gugatanmu' }
 ]
 
-const activeTab = ref(tabs[0])
+const activeTab = computed(() => {
+  return tabs.find(tab => tab.href === route.path) || tabs[0]
+})
+
+const toggleColorMode = () => {
+  colorMode.store.value = colorMode.value === 'dark' ? 'light' : 'dark'
+}
 </script>
 
 <template>
@@ -21,18 +29,17 @@ const activeTab = ref(tabs[0])
             :to="tab.href"
             :class="[
               'px-3 py-2 rounded-md text-sm font-medium',
-              activeTab.name === tab.name
+              activeTab.href === tab.href
                 ? 'bg-primary text-primary-foreground'
                 : 'text-foreground hover:bg-muted'
             ]"
-            @click="activeTab = tab"
           >
             {{ tab.name }}
           </NuxtLink>
         </li>
       </ul>
     </nav>
-    <Button @click="colorMode.preference = colorMode.value === 'dark' ? 'light' : 'dark'">
+    <Button @click="toggleColorMode">
       <span v-if="colorMode.value === 'dark'">🌞</span>
       <span v-else>🌙</span>
     </Button>

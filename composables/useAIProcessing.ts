@@ -1,4 +1,4 @@
-import { ref } from 'vue'
+import { ref, Ref } from 'vue'
 import * as pdfjs from 'pdfjs-dist'
 import { createWorker, createScheduler } from 'tesseract.js'
 
@@ -14,19 +14,26 @@ const cleanIndonesianText = (text: string): string => {
 // Create a singleton worker
 let worker: Tesseract.Worker | null = null
 
-const getWorker = async () => {
+const getWorker = async (): Promise<Tesseract.Worker> => {
   if (!worker) {
     worker = await createWorker('ind')
   }
   return worker
 }
 
-export const useAIProcessing = () => {
-  const isProcessing = ref(false)
-  const aiResponse = ref('')
-  const progress = ref(0)
+interface AIProcessingResult {
+  isProcessing: Ref<boolean>
+  aiResponse: Ref<string>
+  processFile: (file: File) => Promise<string>
+  progress: Ref<number>
+}
 
-  const processFile = async (file: File) => {
+export const useAIProcessing = (): AIProcessingResult => {
+  const isProcessing = ref<boolean>(false)
+  const aiResponse = ref<string>('')
+  const progress = ref<number>(0)
+
+  const processFile = async (file: File): Promise<string> => {
     isProcessing.value = true
     progress.value = 0
 
@@ -93,11 +100,18 @@ export const useAIProcessing = () => {
       }
 
       const result = await response.json()
-      aiResponse.value = result.response
+      console.log('API response:', result)
+      console.log('Type of result.response:', typeof result.response)
+      
+      // Ensure aiResponse is always a string
+      aiResponse.value = typeof result.response === 'string' ? result.response : JSON.stringify(result.response)
+      console.log('aiResponse after assignment:', aiResponse.value)
+      console.log('Type of aiResponse after assignment:', typeof aiResponse.value)
 
       return aiResponse.value
     } catch (error) {
       console.error('Error processing PDF:', error)
+      aiResponse.value = 'Error: ' + ((error as Error).message || 'Unknown error occurred')
       throw error
     } finally {
       isProcessing.value = false

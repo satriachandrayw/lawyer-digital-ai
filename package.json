@@ -28,7 +28,8 @@
     "tailwind-merge": "^2.5.2",
     "tailwindcss-animate": "^1.0.7",
     "tesseract.js": "^5.1.1",
-    "vue": "latest"
+    "vue": "latest",
+    "vue-markdown-render": "^2.2.1"
   },
   "devDependencies": {
     "@nuxtjs/tailwindcss": "^6.12.1",
