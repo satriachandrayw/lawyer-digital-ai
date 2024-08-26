@@ -1,6 +1,8 @@
 import { defineEventHandler, readBody } from 'h3'
 import { processWithOpenAIFull } from './openaiService'
 
+export const maxDuration = 60;
+
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
   console.log("Received body:", body);
