@@ -1,11 +1,13 @@
 import OpenAI from 'openai'
 import { OpenAIStream } from 'ai'
 
-// Create an OpenAI API client (that's edge friendly!)
-export const openai = new OpenAI({
-  apiKey: process.env.OPENROUTER_API_KEY || '',
-  baseURL: 'https://openrouter.ai/api/v1',
-})
+// Move the OpenAI client initialization to a separate function
+const getOpenAIClient = () => {
+  return new OpenAI({
+    apiKey: process.env.OPENROUTER_API_KEY || '',
+    baseURL: 'https://openrouter.ai/api/v1',
+  })
+}
 
 const splitTextIntoChunks = (text: string, maxChunkSize: number = 4000): string[] => {
   const chunks: string[] = [];
@@ -49,11 +51,11 @@ export const processWithOpenAI = async (messages, options = {}) => {
     },
   }
 
-  // Add a message to specify the language
   messages.unshift({ role: 'system', content: 'Tolong berikan respons dalam bahasa Indonesia.' })
 
   const mergedOptions = { ...defaultOptions, ...options, messages }
 
+  const openai = getOpenAIClient()
   const response = await retryWithExponentialBackoff(() => openai.chat.completions.create(mergedOptions))
 
   console.log(response);
@@ -63,6 +65,13 @@ export const processWithOpenAI = async (messages, options = {}) => {
 
 // New function for non-streaming response
 export const processWithOpenAIFull = async (text: string, options = {}) => {
+  console.log("Received text type:", typeof text);
+  console.log("Text length:", text?.length);
+
+  if (typeof text !== 'string' || !text) {
+    throw new Error('Invalid input: text must be a non-empty string');
+  }
+
   const defaultOptions = {
     model: 'openai/gpt-4o-mini',
     stream: false,
@@ -73,10 +82,14 @@ export const processWithOpenAIFull = async (text: string, options = {}) => {
   }
 
   const chunks = splitTextIntoChunks(text);
+  console.log("Number of chunks:", chunks.length);
+
   let fullResponse = '';
 
-  // Process all chunks
+  const openai = getOpenAIClient()
+
   for (let i = 0; i < chunks.length; i++) {
+    console.log(`Processing chunk ${i + 1} of ${chunks.length}`);
     const messages = [
       { role: 'system', content: 'Anda adalah asisten hukum yang ahli dalam menganalisis dokumen hukum Indonesia. Tolong analisis bagian dokumen berikut ini dalam konteks keseluruhan dokumen. Jangan membuat kesimpulan atau respons final sampai Anda telah menganalisis seluruh dokumen.' },
       { role: 'user', content: `Bagian ${i + 1} dari ${chunks.length} dari dokumen hukum:\n\n${chunks[i]}` },
@@ -92,11 +105,10 @@ export const processWithOpenAIFull = async (text: string, options = {}) => {
       fullResponse += response.choices[0].message.content + '\n\n';
     } catch (error) {
       console.error(`Error processing chunk ${i + 1}:`, error);
-      throw error; // Rethrow the error to handle it at a higher level
+      throw error;
     }
   }
 
-  // Final pass to create the response letter
   const finalMessages = [
     { role: 'system', content: 'Anda adalah asisten hukum yang ahli dalam membuat surat respon gugatan. Berdasarkan analisis dokumen yang telah dilakukan, buatlah surat respon gugatan yang komprehensif dan akurat.' },
     { role: 'user', content: `Berikut adalah analisis lengkap dari dokumen hukum. Gunakan ini untuk membuat surat respon gugatan:\n\n${fullResponse}` },
@@ -108,6 +120,6 @@ export const processWithOpenAIFull = async (text: string, options = {}) => {
     return finalResponse.choices[0].message.content;
   } catch (error) {
     console.error('Error processing final response:', error);
-    throw error; // Rethrow the error to handle it at a higher level
+    throw error;
   }
 }

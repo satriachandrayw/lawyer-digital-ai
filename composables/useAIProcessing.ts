@@ -3,7 +3,6 @@ import * as pdfjs from 'pdfjs-dist'
 import { createWorker, createScheduler } from 'tesseract.js'
 
 const cleanIndonesianText = (text: string): string => {
-  // Remove extra whitespace and normalize some common characters
   return text
     .replace(/\s+/g, ' ')
     .replace(/[""]/g, '"')
@@ -11,7 +10,6 @@ const cleanIndonesianText = (text: string): string => {
     .trim()
 }
 
-// Create a singleton worker
 let worker: Tesseract.Worker | null = null
 
 const getWorker = async (): Promise<Tesseract.Worker> => {
@@ -20,6 +18,8 @@ const getWorker = async (): Promise<Tesseract.Worker> => {
   }
   return worker
 }
+
+// Remove the systemPrompt from here as we'll use the one from openaiService.ts
 
 interface AIProcessingResult {
   isProcessing: Ref<boolean>
@@ -54,7 +54,7 @@ export const useAIProcessing = (): AIProcessingResult => {
         pagePromises.push((async () => {
           try {
             const page = await pdf.getPage(i)
-            const scale = 2 // Increase scale for better OCR results
+            const scale = 2
             const viewport = page.getViewport({ scale })
             const canvas = document.createElement('canvas')
             const context = canvas.getContext('2d')
@@ -63,17 +63,15 @@ export const useAIProcessing = (): AIProcessingResult => {
 
             await page.render({ canvasContext: context, viewport }).promise
             
-            // Convert canvas to data URL
             const dataUrl = canvas.toDataURL('image/png')
             
-            // Perform OCR on the data URL
             const { data: { text: pageText } } = await scheduler.addJob('recognize', dataUrl)
             
             progress.value = (i / numPages) * 100
             return pageText
           } catch (error) {
             console.error(`Error processing page ${i}:`, error)
-            return '' // Return empty string if page processing fails
+            return ''
           }
         })())
       }
@@ -81,13 +79,12 @@ export const useAIProcessing = (): AIProcessingResult => {
       const pageTexts = await Promise.all(pagePromises)
       const text = pageTexts.join('\n')
 
-      // Clean and preprocess the text
       const cleanedText = cleanIndonesianText(text)
+      console.log("Cleaned text length:", cleanedText.length);
 
-      console.log(cleanedText)
-
-      // Call the process-pdf API endpoint
-      const response = await fetch('/api/process-pdf', {
+      // Call the new API route
+      console.log("Sending request to /api/process-ai");
+      const response = await fetch('/api/process-ai', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -96,17 +93,14 @@ export const useAIProcessing = (): AIProcessingResult => {
       })
 
       if (!response.ok) {
-        throw new Error(`Processing failed: ${response.statusMessage}`)
+        const errorText = await response.text();
+        console.error("API response not OK:", response.status, errorText);
+        throw new Error(`Processing failed: ${response.status} ${response.statusText}\n${errorText}`);
       }
 
       const result = await response.json()
-      console.log('API response:', result)
-      console.log('Type of result.response:', typeof result.response)
-      
-      // Ensure aiResponse is always a string
-      aiResponse.value = typeof result.response === 'string' ? result.response : JSON.stringify(result.response)
-      console.log('aiResponse after assignment:', aiResponse.value)
-      console.log('Type of aiResponse after assignment:', typeof aiResponse.value)
+      aiResponse.value = result.response
+      console.log('Received AI Response, length:', aiResponse.value.length);
 
       return aiResponse.value
     } catch (error) {
