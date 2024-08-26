@@ -87,8 +87,13 @@ export const processWithOpenAIFull = async (text: string, options = {}) => {
     }
 
     const mergedOptions = { ...defaultOptions, ...options, messages };
-    const response = await retryWithExponentialBackoff(() => openai.chat.completions.create(mergedOptions));
-    fullResponse += response.choices[0].message.content + '\n\n';
+    try {
+      const response = await retryWithExponentialBackoff(() => openai.chat.completions.create(mergedOptions));
+      fullResponse += response.choices[0].message.content + '\n\n';
+    } catch (error) {
+      console.error(`Error processing chunk ${i + 1}:`, error);
+      throw error; // Rethrow the error to handle it at a higher level
+    }
   }
 
   // Final pass to create the response letter
@@ -98,7 +103,11 @@ export const processWithOpenAIFull = async (text: string, options = {}) => {
   ];
 
   const finalOptions = { ...defaultOptions, ...options, messages: finalMessages };
-  const finalResponse = await retryWithExponentialBackoff(() => openai.chat.completions.create(finalOptions));
-
-  return finalResponse.choices[0].message.content;
+  try {
+    const finalResponse = await retryWithExponentialBackoff(() => openai.chat.completions.create(finalOptions));
+    return finalResponse.choices[0].message.content;
+  } catch (error) {
+    console.error('Error processing final response:', error);
+    throw error; // Rethrow the error to handle it at a higher level
+  }
 }

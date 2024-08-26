@@ -96,7 +96,7 @@ export const useAIProcessing = (): AIProcessingResult => {
       })
 
       if (!response.ok) {
-        throw new Error(`Processing failed: ${response.statusText}`)
+        throw new Error(`Processing failed: ${response.statusMessage}`)
       }
 
       const result = await response.json()
