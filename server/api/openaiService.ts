@@ -1,6 +1,9 @@
 import { createOpenRouter } from '@openrouter/ai-sdk-provider'
 import { generateText, OpenAIStream, streamText } from 'ai'
 
+import { retryWithExponentialBackoff } from '@/utils/promise'
+import { splitTextIntoChunks } from '@/utils/text'
+
 // Initialize OpenRouter client
 const openrouter = createOpenRouter({
   apiKey: process.env.OPENROUTER_API_KEY || '',
@@ -9,46 +12,16 @@ const openrouter = createOpenRouter({
 
 let context = ''
 
-const splitTextIntoChunks = (text: string, maxChunkSize: number = 4000): string[] => {
-  const chunks: string[] = [];
-  let currentChunk = '';
-
-  text.split('\n').forEach(paragraph => {
-    if (currentChunk.length + paragraph.length > maxChunkSize) {
-      chunks.push(currentChunk.trim());
-      currentChunk = '';
-    }
-    currentChunk += paragraph + '\n';
-  });
-
-  if (currentChunk.trim()) {
-    chunks.push(currentChunk.trim());
-  }
-
-  return chunks;
-};
-
-const retryWithExponentialBackoff = async (fn: () => Promise<any>, maxRetries = 3, initialDelay = 1000) => {
-  let retries = 0;
-  while (retries < maxRetries) {
-    try {
-      return await fn();
-    } catch (error) {
-      retries++;
-      if (retries === maxRetries) throw error;
-      await new Promise(resolve => setTimeout(resolve, initialDelay * Math.pow(2, retries)));
-    }
-  }
-};
-
 const processArrayOfChunk = async (chunks: string[], options: any, defaultOptions: any) => {
   let fullResponse = '';
 
   for (let i = 0; i < chunks.length; i++) {
+    context += chunks[i] + '\n'
     console.log(`Processing chunk ${i + 1} of ${chunks.length}`);
+
     const messages = [
       { role: 'system', content: 'Anda adalah asisten hukum yang ahli dalam menganalisis dokumen hukum Indonesia. Tolong analisis bagian dokumen berikut ini dalam konteks keseluruhan dokumen. Jangan membuat kesimpulan atau respons final sampai Anda telah menganalisis seluruh dokumen.' },
-      { role: 'user', content: `Bagian ${i + 1} dari ${chunks.length} dari dokumen hukum:\n\n${chunks[i]}` },
+      { role: 'user', content: `Bagian ${i + 1} dari ${chunks.length} dari dokumen hukum:\n\n${chunks[i]}\n\nKonteks sebelumnya:\n\n${context}` },
     ];
 
     if (i > 0) {
@@ -57,15 +30,19 @@ const processArrayOfChunk = async (chunks: string[], options: any, defaultOption
 
     const mergedOptions = { ...defaultOptions, ...options, messages };
     try {
-      const {text} = await retryWithExponentialBackoff(() => generateText(mergedOptions));
-      fullResponse += text + '\n\n';
+      const stream = await retryWithExponentialBackoff(() => generateText(mergedOptions));
+      fullResponse += stream.text + '\n\n';
     } catch (error) {
       console.error(`Error processing chunk ${i + 1}:`, error);
       throw error;
     }
   }
 
-  return fullResponse;
+  const response = {
+    text: fullResponse,
+  }
+  console.log( 'fullResponse', fullResponse)
+  return response;
 }
 
 export const processChunk = async (text: string, defaultOptions = {}, options = {}) => {
@@ -89,7 +66,7 @@ export const processChunk = async (text: string, defaultOptions = {}, options = 
 
 export const processWithOpenAI = async (messages, options = {}) => {
   const defaultOptions = {
-    model: 'openai/gpt-4o-mini',
+    model: openrouter('openai/gpt-4o-mini'),
     stream: true,
     headers: {
       'HTTP-Referer': 'https://your-site.com',
@@ -101,11 +78,9 @@ export const processWithOpenAI = async (messages, options = {}) => {
 
   const mergedOptions = { ...defaultOptions, ...options, messages }
 
-  const response = await retryWithExponentialBackoff(() => openrouter.chat.completions.create(mergedOptions))
-
-  console.log(response);
+  const response = await retryWithExponentialBackoff(() => streamText(mergedOptions))
   
-  return OpenAIStream(response)
+  return response
 }
 
 // New function for non-streaming response
@@ -132,7 +107,7 @@ export const processWithOpenAIFull = async (text: string, options = {}) => {
   const fullResponse = await processArrayOfChunk(chunks, options, defaultOptions);
 
   const finalMessages = [
-    { role: 'system', content: 'Anda adalah asisten hukum yang ahli dalam membuat surat respon gugatan. Berdasarkan analisis dokumen yang telah dilakukan, buatlah surat respon gugatan yang komprehensif dan akurat.' },
+    { role: 'system', content: 'Anda adalah asisten hukum yang ahli dalam membuat surat respon gugatan hukum Indonesia. Berdasarkan analisis dokumen yang telah dilakukan, buatlah surat respon gugatan yang komprehensif dan akurat berdasarkan literatur hukum yang ada'},
     { role: 'user', content: `Berikut adalah analisis lengkap dari dokumen hukum. Gunakan ini untuk membuat surat respon gugatan:\n\n${fullResponse}` },
   ];
 
@@ -149,12 +124,16 @@ export const processWithOpenAIFull = async (text: string, options = {}) => {
 export const  processWithOpenAIStream = async (text: string, options = {}) => {
   const defaultOptions = {
     model: openrouter('openai/gpt-4o-mini'),
+    temperature: 0.7,
     stream: true,
     headers: {
       'HTTP-Referer': 'https://your-site.com',
     },
   }
   try {
+    // const chunks = splitTextIntoChunks(text, 1000);
+    // const stream = await processArrayOfChunk(chunks, options, defaultOptions);
+    // console.log( 'stream', stream.text)
     const stream = await processChunk(text, defaultOptions, options)
     return stream
   } catch (error) {
@@ -166,6 +145,7 @@ export const  processWithOpenAIStream = async (text: string, options = {}) => {
 export const finalizeProcessing = async (options = {}) => {
   const defaultOptions = {
     model: openrouter('openai/gpt-4o-mini'),
+    temperature: 0.7,
     stream: true,
     headers: {
       'HTTP-Referer': 'https://your-site.com',
@@ -173,9 +153,51 @@ export const finalizeProcessing = async (options = {}) => {
   }
 
   const messages = [
-    { role: 'system', content: 'Anda adalah asisten hukum yang ahli dalam membuat surat respon gugatan. Berdasarkan analisis dokumen yang telah dilakukan, buatlah surat respon gugatan yang komprehensif dan akurat.' },
+    { role: 'system', content: `Anda adalah asisten hukum yang ahli dalam membuat surat respon gugatan hukum Indonesia. Berdasarkan analisis dokumen yang telah dilakukan, buatlah surat respon gugatan yang komprehensif dan akurat berdasarkan literatur hukum yang ada. Pastikan bahwa surat tersebut tidak mengandung kesalahan bahasa atau ejaan.
+      
+      Format surat respon gugatan:
+      1. **Tanggal dan Nomor Surat**: [Tanggal], [Nomor Surat]
+      2. **Alamat Tujuan**: 
+        - Hakim Pemeriksa Perkara No. [Nomor Perkara]
+        - Pengadilan Negeri [Nama Pengadilan]
+        - [Alamat Pengadilan]
+      3. **Perihal**: Eksepsi dan Jawaban Tergugat pada Perkara Gugatan Sederhana No. [Nomor Perkara]
+      4. **Identitas Pihak**:
+        - **Penggugat**: [Nama Penggugat], [Alamat Penggugat]
+        - **Tergugat**: [Nama Tergugat], [Alamat Tergugat]
+        - **Kuasa Hukum**: 
+          - Nama: [Nama Kuasa Hukum]
+          - NIK: [NIK Kuasa Hukum]
+          - Tempat/Tanggal Lahir: [TTL Kuasa Hukum]
+          - Jenis Kelamin: [Jenis Kelamin]
+          - Warga Negara: [Warga Negara]
+          - Agama: [Agama]
+          - Pekerjaan: [Pekerjaan]
+          - Status Kawin: [Status Kawin]
+          - Pendidikan: [Pendidikan]
+      5. **Eksepsi**:
+        - [Detail Eksepsi Error in Persona]
+        - [Detail Plurium Litis Consortium]
+        - [Detail Obscuur Libel]
+      6. **Pokok Perkara**:
+        - [Tanggapan terhadap dalil Gugatan]
+        - [Argumen hukum yang mendukung Tergugat]
+      7. **Permohonan Putusan**:
+        - [Permohonan untuk menerima eksepsi dan menolak gugatan]
+        - [Permohonan untuk membebankan biaya kepada Penggugat]
+      8. **Penutup**: 
+        - [Pernyataan harapan untuk putusan yang adil]
+        - [Tanda tangan Kuasa Hukum]
+
+        - Pastikan surat tersebut mengikuti format resmi dan menggunakan bahasa hukum yang tepat.
+        - Sertakan literatur hukum yang mendukung argumen Anda sepeti KUHP atau teori hukum.
+        - Pastikan bahwa surat tersebut tidak mengandung kesalahan bahasa atau ejaan.
+        - Gunakan bahasa yang panjang dan rinci
+        - Sertakan dengan lengkap detail-detail yang ada dalam dokumen seperti daftar isi, tanggal, nama, dan lainnya. 
+      ` },
+
     { role: 'user', content: `Berikut adalah analisis lengkap dari dokumen hukum. Gunakan ini untuk membuat surat respon gugatan:\n\n${context}` },
-  ]
+  ];
 
   const mergedOptions = { ...defaultOptions, ...options, messages }
 

@@ -1,6 +1,6 @@
 import { defineEventHandler, readBody } from 'h3'
+
 import { processWithOpenAIStream, finalizeProcessing } from './openaiService'
-import { StreamingTextResponse } from 'ai'
 
 export const maxDuration = 300; // Increased to 5 minutes
 

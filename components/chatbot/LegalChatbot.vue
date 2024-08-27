@@ -1,8 +1,13 @@
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue'
-import { useChat } from 'ai/vue'
+import { useChat } from '@ai-sdk/vue'
 
-const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat()
+const { messages, input, handleSubmit, isLoading } = useChat({
+  api: '/api/chat',
+  onResponse: (response) => {
+    console.log('Response:', response)
+  },
+})
 
 const typingIndicator = ref('...')
 
@@ -63,7 +68,6 @@ watch(isLoading, (loading) => {
         <Input
           v-model="input"
           placeholder="Ask a legal question..."
-          @input="handleInputChange"
           class="flex-grow"
         />
         <Button type="submit" :disabled="input.length === 0">

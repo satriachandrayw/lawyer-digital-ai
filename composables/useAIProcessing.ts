@@ -1,15 +1,10 @@
-import { ref, Ref } from 'vue'
+import { ref, computed } from 'vue'
 import * as pdfjs from 'pdfjs-dist'
-import {useCompletion} from '@ai-sdk/vue'
+import { useCompletion } from '@ai-sdk/vue'
 import { createWorker, createScheduler } from 'tesseract.js'
 
-const cleanIndonesianText = (text: string): string => {
-  return text
-    .replace(/\s+/g, ' ')
-    .replace(/[""]/g, '"')
-    .replace(/['']/g, "'")
-    .trim()
-}
+import { cleanIndonesianText } from '@/utils/text'
+import type { AIProcessingResult } from '@/types/aiProcessing' 
 
 let worker: Tesseract.Worker | null = null
 
@@ -20,19 +15,13 @@ const getWorker = async (): Promise<Tesseract.Worker> => {
   return worker
 }
 
-// Remove the systemPrompt from here as we'll use the one from openaiService.ts
-
-interface AIProcessingResult {
-  isProcessing: Ref<boolean>
-  aiResponse: Ref<string>
-  processFile: (file: File) => Promise<ReadableStream<Uint8Array>>
-  progress: Ref<number>
-  isLoading: Ref<boolean|undefined>
-}
-
 export const useAIProcessing = (): AIProcessingResult => {
   const isProcessing = ref<boolean>(false)
-  const progress = ref<number>(0)
+  const processState = ref<string>('')
+  const actualProgress = ref<number>(0)
+  const displayProgress = ref<number>(0)
+
+  const progress = computed(() => Math.min(displayProgress.value, 100))
 
   const { complete, completion, isLoading } = useCompletion({
     api: '/api/process-ai',
@@ -44,9 +33,18 @@ export const useAIProcessing = (): AIProcessingResult => {
     },
   })
 
+  const updateProgress = () => {
+    if (displayProgress.value < actualProgress.value) {
+      displayProgress.value = Math.min(displayProgress.value + 0.5, actualProgress.value)
+      requestAnimationFrame(updateProgress)
+    }
+  }
+
   const processFile = async (file: File): Promise<any> => {
     isProcessing.value = true
-    progress.value = 0
+    processState.value = 'Read PDF'
+    actualProgress.value = 0
+    displayProgress.value = 0
 
     try {
       pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`
@@ -77,9 +75,6 @@ export const useAIProcessing = (): AIProcessingResult => {
           
           const { data: { text: pageText } } = await scheduler.addJob('recognize', dataUrl)
           
-          processedPages++
-          progress.value = (processedPages / numPages) * 100
-
           return cleanIndonesianText(pageText)
         } catch (error) {
           console.error(`Error processing page ${pageNum}:`, error)
@@ -93,10 +88,14 @@ export const useAIProcessing = (): AIProcessingResult => {
         const pageText = await pagePromise
         if (pageText) {
           await complete(pageText)
+          processedPages++
+          actualProgress.value = (processedPages / numPages) * 100
+          requestAnimationFrame(updateProgress)
         }
       }
 
       isProcessing.value = false
+      processState.value = 'Waiting AI Response'
       // Finalize processing
       await complete('', { body: { finalize: true } })
 
@@ -105,11 +104,13 @@ export const useAIProcessing = (): AIProcessingResult => {
       throw error
     }
   }
+
   return {
     isProcessing,
     aiResponse: completion,
     processFile,
-    progress,
-    isLoading
+    progress: displayProgress,
+    isLoading,
+    processState
   }
 }

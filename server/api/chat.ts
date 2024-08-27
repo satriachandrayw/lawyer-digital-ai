@@ -29,5 +29,5 @@ export default defineEventHandler(async (event) => {
     }
   })
 
-  return new StreamingTextResponse(stream)
+  return stream.toAIStreamResponse()
 })

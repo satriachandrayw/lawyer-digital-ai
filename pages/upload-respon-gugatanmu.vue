@@ -1,46 +1,11 @@
 <template>
   <div class="container mx-auto px-4 py-8">
     <h1 class="text-3xl font-bold mb-6">Unggah Surat Gugatan Anda</h1>
-    <form @submit.prevent="handleSubmit" class="mb-8">
-      <div class="mb-4">
-        <label for="pdfFile" class="block text-sm font-medium text-gray-700">Unggah File PDF</label>
-        <input
-          type="file"
-          id="pdfFile"
-          ref="fileInput"
-          accept=".pdf"
-          @change="handleFileChange"
-          class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-        >
-      </div>
-      <button
-        type="submit"
-        :disabled="isProcessing"
-        class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
-      >
-        {{ isProcessing ? 'Sedang Memproses...' : 'Proses File' }}
-      </button>
-    </form>
+    <FileUpload @file-uploaded="handleFileChange" :is-processing="isProcessing" />
     
-    <div v-if="isProcessing" class="bg-gray-100 p-4 rounded-md mb-4">
-      <h2 class="text-xl font-semibold mb-2 text-black">Memproses PDF:</h2>
-      <p class="text-black mb-2">Sedang mengekstrak teks dari PDF menggunakan OCR...</p>
-      <div class="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
-        <div class="bg-blue-600 h-2.5 rounded-full" :style="{ width: `${Math.round(progress)}%` }"></div>
-      </div>
-      <p class="text-sm text-gray-600 mt-1">Progress: {{ Math.round(progress) }}%</p>
-    </div>
+    <ProcessingStatus v-if="isProcessing" :progress="progress" />
     
-    <div v-if="!isProcessing" class="bg-gray-100 p-4 rounded-md mb-4">
-      <h2 class="text-xl font-semibold mb-2 text-black">{{ isLoading ? 'Memuat Respons AI:' : 'Respons AI:' }}</h2>
-      <p class="text-black mb-2">{{ isLoading ? 'Menerima respons dari model AI...' : '' }}</p>
-      <div v-if="isLoading && !aiResponse" class="w-full flex justify-center">
-        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-      </div>
-      <div v-if="aiResponse" class="prose text-black">
-        <VueMarkdown :source="aiResponse" :options="markdownOptions" />
-      </div>
-    </div>
+    <AIResponse v-if="processState === 'Waiting AI Response'" :ai-response="aiResponse" :is-loading="isLoading" />
     
     <div v-if="error" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mt-4" role="alert">
       <strong class="font-bold">Error!</strong>
@@ -50,34 +15,28 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
+
 import { useAIProcessing } from '@/composables/useAIProcessing'
-import VueMarkdown from 'vue-markdown-render'
+import FileUpload from '@/components/upload-surat/FileUpload.vue'
+import ProcessingStatus from '@/components/upload-surat/ProcessingStatus.vue'
+import AIResponse from '@/components/upload-surat/AIResponse.vue'
 
-const fileInput = ref<HTMLInputElement | null>(null)
 const error = ref<string | null>(null)
-const { processFile, isProcessing, aiResponse, progress, isLoading } = useAIProcessing()
-
-const markdownOptions = {
-  html: true,
-  linkify: true,
-  typographer: true,
-}
+const { processFile, isProcessing, aiResponse, progress, isLoading, processState } = useAIProcessing()
 
 const handleFileChange = (event: Event) => {
   error.value = null  // Clear any previous errors
+  const target = event.target as HTMLInputElement
+  if (target.files && target.files.length > 0) {
+    const file = target.files[0]
+    handleSubmit(file)
+  }
 }
 
-const handleSubmit = async () => {
-  if (!fileInput.value || !fileInput.value.files || fileInput.value.files.length === 0) {
-    error.value = 'Silakan pilih file PDF'
-    return
-  }
-
-  const file = fileInput.value.files[0]
-
+const handleSubmit = async (file: File) => {
   try {
-    error.value = null  // Hapus kesalahan sebelumnya
+    error.value = null  // Clear any previous errors
     await processFile(file)
   } catch (err) {
     console.error('Kesalahan saat memproses file:', err)
@@ -90,7 +49,6 @@ watch(aiResponse, (newValue) => {
   console.log('AI Response updated:', newValue)
   console.log('Type of AI Response:', typeof newValue)
 })
-
 </script>
 
 <style>
