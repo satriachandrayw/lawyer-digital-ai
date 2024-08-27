@@ -36,18 +36,15 @@ export const useAIProcessing = (): AIProcessingResult => {
 
   const { complete, completion, isLoading } = useCompletion({
     api: '/api/process-ai',
-    body: { text: '' }, // We'll update this dynamically
     onResponse: (response) => {
-      // Optional: Handle the response if needed
       console.log('Received response from API')
     },
     onFinish: (prompt, completion) => {
-      // Optional: Handle completion if needed
       console.log('AI processing finished')
     },
   })
 
-  const processFile = async (file: File): Promise<ReadableStream<Uint8Array>> => {
+  const processFile = async (file: File): Promise<any> => {
     isProcessing.value = true
     progress.value = 0
 
@@ -62,54 +59,52 @@ export const useAIProcessing = (): AIProcessingResult => {
       scheduler.addWorker(worker)
 
       const numPages = pdf.numPages
-      const pagePromises = []
+      let processedPages = 0
 
-      for (let i = 1; i <= numPages; i++) {
-        pagePromises.push((async () => {
-          try {
-            const page = await pdf.getPage(i)
-            const scale = 2
-            const viewport = page.getViewport({ scale })
-            const canvas = document.createElement('canvas')
-            const context = canvas.getContext('2d')
-            canvas.height = viewport.height
-            canvas.width = viewport.width
+      const processPage = async (pageNum: number) => {
+        try {
+          const page = await pdf.getPage(pageNum)
+          const scale = 2
+          const viewport = page.getViewport({ scale })
+          const canvas = document.createElement('canvas')
+          const context = canvas.getContext('2d')
+          canvas.height = viewport.height
+          canvas.width = viewport.width
 
-            await page.render({ canvasContext: context, viewport }).promise
-            
-            const dataUrl = canvas.toDataURL('image/png')
-            
-            const { data: { text: pageText } } = await scheduler.addJob('recognize', dataUrl)
-            
-            // Update progress after each page is processed
-            progress.value = (i / numPages) * 80 // 80% for PDF processing
-            return pageText
-          } catch (error) {
-            console.error(`Error processing page ${i}:`, error)
-            return ''
-          }
-        })())
+          await page.render({ canvasContext: context, viewport }).promise
+          
+          const dataUrl = canvas.toDataURL('image/png')
+          
+          const { data: { text: pageText } } = await scheduler.addJob('recognize', dataUrl)
+          
+          processedPages++
+          progress.value = (processedPages / numPages) * 100
+
+          return cleanIndonesianText(pageText)
+        } catch (error) {
+          console.error(`Error processing page ${pageNum}:`, error)
+          return ''
+        }
       }
 
-      const pageTexts = await Promise.all(pagePromises)
-      const text = pageTexts.join('\n')
+      const pagePromises = Array.from({ length: numPages }, (_, i) => processPage(i + 1))
 
-      const cleanedText = cleanIndonesianText(text)
-      console.log("Cleaned text length:", cleanedText.length);
+      for (const pagePromise of pagePromises) {
+        const pageText = await pagePromise
+        if (pageText) {
+          await complete(pageText)
+        }
+      }
 
-      // Use the complete function from useCompletion with the cleaned text
-      await complete(cleanedText)
+      isProcessing.value = false
+      // Finalize processing
+      await complete('', { body: { finalize: true } })
 
-      // Update progress to 100% after sending to process-ai
-      progress.value = 100
     } catch (error) {
       console.error('Error processing PDF:', error)
       throw error
-    } finally {
-      isProcessing.value = false
     }
   }
-
   return {
     isProcessing,
     aiResponse: completion,

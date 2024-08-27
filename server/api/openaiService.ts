@@ -7,6 +7,8 @@ const openrouter = createOpenRouter({
   baseURL: 'https://openrouter.ai/api/v1',
 })
 
+let context = ''
+
 const splitTextIntoChunks = (text: string, maxChunkSize: number = 4000): string[] => {
   const chunks: string[] = [];
   let currentChunk = '';
@@ -39,7 +41,7 @@ const retryWithExponentialBackoff = async (fn: () => Promise<any>, maxRetries = 
   }
 };
 
-const processChunks = async (chunks: string[], options: any, defaultOptions: any) => {
+const processArrayOfChunk = async (chunks: string[], options: any, defaultOptions: any) => {
   let fullResponse = '';
 
   for (let i = 0; i < chunks.length; i++) {
@@ -64,6 +66,25 @@ const processChunks = async (chunks: string[], options: any, defaultOptions: any
   }
 
   return fullResponse;
+}
+
+export const processChunk = async (text: string, defaultOptions = {}, options = {}) => {
+  context += text + '\n'
+
+  const messages = [
+    { role: 'system', content: 'Anda adalah asisten hukum yang ahli dalam menganalisis dokumen hukum Indonesia. Analisis bagian dokumen berikut ini dalam konteks keseluruhan dokumen yang telah Anda lihat sejauh ini. Jangan membuat kesimpulan atau respons final sampai Anda menerima sinyal bahwa seluruh dokumen telah selesai.' },
+    { role: 'user', content: `Bagian baru dari dokumen hukum:\n\n${text}\n\nKonteks sebelumnya:\n\n${context}` },
+  ]
+
+  const mergedOptions = { ...defaultOptions, ...options, messages }
+
+  try {
+    const stream = await generateText(mergedOptions)
+    return stream
+  } catch (error) {
+    console.error('Error processing chunk:', error)
+    throw error
+  }
 }
 
 export const processWithOpenAI = async (messages, options = {}) => {
@@ -108,7 +129,7 @@ export const processWithOpenAIFull = async (text: string, options = {}) => {
   const chunks = splitTextIntoChunks(text);
   console.log("Number of chunks:", chunks.length);
 
-  const fullResponse = await processChunks(chunks, options, defaultOptions);
+  const fullResponse = await processArrayOfChunk(chunks, options, defaultOptions);
 
   const finalMessages = [
     { role: 'system', content: 'Anda adalah asisten hukum yang ahli dalam membuat surat respon gugatan. Berdasarkan analisis dokumen yang telah dilakukan, buatlah surat respon gugatan yang komprehensif dan akurat.' },
@@ -125,7 +146,7 @@ export const processWithOpenAIFull = async (text: string, options = {}) => {
   }
 }
 
-export const processWithOpenAIStream = async (text: string, options = {}) => {
+export const  processWithOpenAIStream = async (text: string, options = {}) => {
   const defaultOptions = {
     model: openrouter('openai/gpt-4o-mini'),
     stream: true,
@@ -134,22 +155,36 @@ export const processWithOpenAIStream = async (text: string, options = {}) => {
     },
   }
   try {
-    const chunks = splitTextIntoChunks(text);
-    console.log("Number of chunks:", chunks.length);
-    const fullResponse = await processChunks(chunks, options, defaultOptions);
-
-    const finalMessages = [
-      { role: 'system', content: 'Anda adalah asisten hukum yang ahli dalam membuat surat respon gugatan. Berdasarkan analisis dokumen yang telah dilakukan, buatlah surat respon gugatan yang komprehensif dan akurat.' },
-      { role: 'user', content: `Berikut adalah analisis lengkap dari dokumen hukum. Gunakan ini untuk membuat surat respon gugatan:\n\n${fullResponse}` },
-    ];
-
-    const mergedOptions = { ...defaultOptions, ...options, messages: finalMessages }
-
-    const stream = await streamText(mergedOptions)
-
+    const stream = await processChunk(text, defaultOptions, options)
     return stream
   } catch (error) {
-    console.error('Error processing stream response:', error);
-    throw error;
+    console.error('Error processing stream response:', error)
+    throw error
+  }
+}
+
+export const finalizeProcessing = async (options = {}) => {
+  const defaultOptions = {
+    model: openrouter('openai/gpt-4o-mini'),
+    stream: true,
+    headers: {
+      'HTTP-Referer': 'https://your-site.com',
+    },
+  }
+
+  const messages = [
+    { role: 'system', content: 'Anda adalah asisten hukum yang ahli dalam membuat surat respon gugatan. Berdasarkan analisis dokumen yang telah dilakukan, buatlah surat respon gugatan yang komprehensif dan akurat.' },
+    { role: 'user', content: `Berikut adalah analisis lengkap dari dokumen hukum. Gunakan ini untuk membuat surat respon gugatan:\n\n${context}` },
+  ]
+
+  const mergedOptions = { ...defaultOptions, ...options, messages }
+
+  try {
+    const response = await streamText(mergedOptions)
+    context = '' // Reset context after final processing
+    return response
+  } catch (error) {
+    console.error('Error processing final response:', error)
+    throw error
   }
 }
