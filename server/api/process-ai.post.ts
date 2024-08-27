@@ -1,5 +1,6 @@
 import { defineEventHandler, readBody } from 'h3'
-import { processWithOpenAIFull } from './openaiService'
+import { processWithOpenAIStream } from './openaiService'
+import { StreamingTextResponse } from 'ai'
 
 export const maxDuration = 60;
 
@@ -7,25 +8,24 @@ export default defineEventHandler(async (event) => {
   const body = await readBody(event)
   console.log("Received body:", body);
 
-  if (!body || !body.text) {
+  if (!body || !body.prompt) {
     throw createError({
       statusCode: 400,
-      statusMessage: 'Text is required in the request body',
+      statusMessage: 'Prompt is required in the request body',
     })
   }
 
-  const { text } = body
+  const { prompt } = body
 
   try {
-    console.log("Processing text of length:", text.length);
-    const response = await processWithOpenAIFull(text, {
+    console.log("Processing text of length:", prompt.length);
+    const stream = await processWithOpenAIStream(prompt, {
       headers: {
         'X-Title': 'Indonesian Legal Document Analyzer',
       },
     })
 
-    console.log("Processed successfully, response length:", response.length);
-    return { response }
+    return stream.toDataStreamResponse()
   } catch (error) {
     console.error('Error processing text:', error)
     throw createError({

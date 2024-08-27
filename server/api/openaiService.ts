@@ -1,13 +1,11 @@
-import OpenAI from 'openai'
-import { OpenAIStream } from 'ai'
+import { createOpenRouter } from '@openrouter/ai-sdk-provider'
+import { generateText, OpenAIStream, streamText } from 'ai'
 
-// Move the OpenAI client initialization to a separate function
-const getOpenAIClient = () => {
-  return new OpenAI({
-    apiKey: process.env.OPENROUTER_API_KEY || '',
-    baseURL: 'https://openrouter.ai/api/v1',
-  })
-}
+// Initialize OpenRouter client
+const openrouter = createOpenRouter({
+  apiKey: process.env.OPENROUTER_API_KEY || '',
+  baseURL: 'https://openrouter.ai/api/v1',
+})
 
 const splitTextIntoChunks = (text: string, maxChunkSize: number = 4000): string[] => {
   const chunks: string[] = [];
@@ -41,6 +39,33 @@ const retryWithExponentialBackoff = async (fn: () => Promise<any>, maxRetries = 
   }
 };
 
+const processChunks = async (chunks: string[], options: any, defaultOptions: any) => {
+  let fullResponse = '';
+
+  for (let i = 0; i < chunks.length; i++) {
+    console.log(`Processing chunk ${i + 1} of ${chunks.length}`);
+    const messages = [
+      { role: 'system', content: 'Anda adalah asisten hukum yang ahli dalam menganalisis dokumen hukum Indonesia. Tolong analisis bagian dokumen berikut ini dalam konteks keseluruhan dokumen. Jangan membuat kesimpulan atau respons final sampai Anda telah menganalisis seluruh dokumen.' },
+      { role: 'user', content: `Bagian ${i + 1} dari ${chunks.length} dari dokumen hukum:\n\n${chunks[i]}` },
+    ];
+
+    if (i > 0) {
+      messages.push({ role: 'assistant', content: 'Berikut adalah analisis lanjutan, dengan mempertimbangkan bagian-bagian sebelumnya:' });
+    }
+
+    const mergedOptions = { ...defaultOptions, ...options, messages };
+    try {
+      const {text} = await retryWithExponentialBackoff(() => generateText(mergedOptions));
+      fullResponse += text + '\n\n';
+    } catch (error) {
+      console.error(`Error processing chunk ${i + 1}:`, error);
+      throw error;
+    }
+  }
+
+  return fullResponse;
+}
+
 export const processWithOpenAI = async (messages, options = {}) => {
   const defaultOptions = {
     model: 'openai/gpt-4o-mini',
@@ -55,8 +80,7 @@ export const processWithOpenAI = async (messages, options = {}) => {
 
   const mergedOptions = { ...defaultOptions, ...options, messages }
 
-  const openai = getOpenAIClient()
-  const response = await retryWithExponentialBackoff(() => openai.chat.completions.create(mergedOptions))
+  const response = await retryWithExponentialBackoff(() => openrouter.chat.completions.create(mergedOptions))
 
   console.log(response);
   
@@ -84,30 +108,7 @@ export const processWithOpenAIFull = async (text: string, options = {}) => {
   const chunks = splitTextIntoChunks(text);
   console.log("Number of chunks:", chunks.length);
 
-  let fullResponse = '';
-
-  const openai = getOpenAIClient()
-
-  for (let i = 0; i < chunks.length; i++) {
-    console.log(`Processing chunk ${i + 1} of ${chunks.length}`);
-    const messages = [
-      { role: 'system', content: 'Anda adalah asisten hukum yang ahli dalam menganalisis dokumen hukum Indonesia. Tolong analisis bagian dokumen berikut ini dalam konteks keseluruhan dokumen. Jangan membuat kesimpulan atau respons final sampai Anda telah menganalisis seluruh dokumen.' },
-      { role: 'user', content: `Bagian ${i + 1} dari ${chunks.length} dari dokumen hukum:\n\n${chunks[i]}` },
-    ];
-
-    if (i > 0) {
-      messages.push({ role: 'assistant', content: 'Berikut adalah analisis lanjutan, dengan mempertimbangkan bagian-bagian sebelumnya:' });
-    }
-
-    const mergedOptions = { ...defaultOptions, ...options, messages };
-    try {
-      const response = await retryWithExponentialBackoff(() => openai.chat.completions.create(mergedOptions));
-      fullResponse += response.choices[0].message.content + '\n\n';
-    } catch (error) {
-      console.error(`Error processing chunk ${i + 1}:`, error);
-      throw error;
-    }
-  }
+  const fullResponse = await processChunks(chunks, options, defaultOptions);
 
   const finalMessages = [
     { role: 'system', content: 'Anda adalah asisten hukum yang ahli dalam membuat surat respon gugatan. Berdasarkan analisis dokumen yang telah dilakukan, buatlah surat respon gugatan yang komprehensif dan akurat.' },
@@ -116,10 +117,39 @@ export const processWithOpenAIFull = async (text: string, options = {}) => {
 
   const finalOptions = { ...defaultOptions, ...options, messages: finalMessages };
   try {
-    const finalResponse = await retryWithExponentialBackoff(() => openai.chat.completions.create(finalOptions));
+    const finalResponse = await retryWithExponentialBackoff(() => openrouter.chat.completions.create(finalOptions));
     return finalResponse.choices[0].message.content;
   } catch (error) {
     console.error('Error processing final response:', error);
+    throw error;
+  }
+}
+
+export const processWithOpenAIStream = async (text: string, options = {}) => {
+  const defaultOptions = {
+    model: openrouter('openai/gpt-4o-mini'),
+    stream: true,
+    headers: {
+      'HTTP-Referer': 'https://your-site.com',
+    },
+  }
+  try {
+    const chunks = splitTextIntoChunks(text);
+    console.log("Number of chunks:", chunks.length);
+    const fullResponse = await processChunks(chunks, options, defaultOptions);
+
+    const finalMessages = [
+      { role: 'system', content: 'Anda adalah asisten hukum yang ahli dalam membuat surat respon gugatan. Berdasarkan analisis dokumen yang telah dilakukan, buatlah surat respon gugatan yang komprehensif dan akurat.' },
+      { role: 'user', content: `Berikut adalah analisis lengkap dari dokumen hukum. Gunakan ini untuk membuat surat respon gugatan:\n\n${fullResponse}` },
+    ];
+
+    const mergedOptions = { ...defaultOptions, ...options, messages: finalMessages }
+
+    const stream = await streamText(mergedOptions)
+
+    return stream
+  } catch (error) {
+    console.error('Error processing stream response:', error);
     throw error;
   }
 }

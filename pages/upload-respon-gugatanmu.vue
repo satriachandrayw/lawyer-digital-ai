@@ -24,22 +24,22 @@
     
     <div v-if="isProcessing" class="bg-gray-100 p-4 rounded-md mb-4">
       <h2 class="text-xl font-semibold mb-2 text-black">Memproses PDF:</h2>
-      <p class="text-black mb-2">Sedang mengekstrak teks dari PDF...</p>
+      <p class="text-black mb-2">Sedang mengekstrak teks dari PDF menggunakan OCR...</p>
       <div class="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
         <div class="bg-blue-600 h-2.5 rounded-full" :style="{ width: `${Math.round(progress)}%` }"></div>
       </div>
       <p class="text-sm text-gray-600 mt-1">Progress: {{ Math.round(progress) }}%</p>
     </div>
     
-    <div v-if="isLoading && !isProcessing" class="bg-gray-100 p-4 rounded-md mb-4">
+    <div v-if="isLoading" class="bg-gray-100 p-4 rounded-md mb-4">
       <h2 class="text-xl font-semibold mb-2 text-black">Memuat Respons AI:</h2>
-      <p class="text-black mb-2">Sedang menunggu respons dari model AI...</p>
+      <p class="text-black mb-2">Menerima respons dari model AI...</p>
       <div class="w-full flex justify-center">
         <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
       </div>
     </div>
     
-    <div v-if="aiResponse && !isLoading && !isProcessing" class="bg-gray-100 p-4 rounded-md">
+    <div v-if="aiResponse" class="bg-gray-100 p-4 rounded-md">
       <h2 class="text-xl font-semibold mb-2 text-black">Respons AI:</h2>
       <VueMarkdown :source="aiResponse" :options="markdownOptions" class="prose text-black" />
     </div>
@@ -52,14 +52,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref } from 'vue'
 import { useAIProcessing } from '@/composables/useAIProcessing'
 import VueMarkdown from 'vue-markdown-render'
 
 const fileInput = ref<HTMLInputElement | null>(null)
 const error = ref<string | null>(null)
-const isLoading = ref<boolean>(false)
-const { processFile, isProcessing, aiResponse, progress } = useAIProcessing()
+const { processFile, isProcessing, aiResponse, progress, isLoading } = useAIProcessing()
 
 const markdownOptions = {
   html: true,
@@ -81,13 +80,10 @@ const handleSubmit = async () => {
 
   try {
     error.value = null  // Hapus kesalahan sebelumnya
-    isLoading.value = true
     await processFile(file)
   } catch (err) {
     console.error('Kesalahan saat memproses file:', err)
     error.value = err instanceof Error ? err.message : 'Terjadi kesalahan saat memproses file'
-  } finally {
-    isLoading.value = false
   }
 }
 
@@ -95,15 +91,8 @@ const handleSubmit = async () => {
 watch(aiResponse, (newValue) => {
   console.log('AI Response updated:', newValue)
   console.log('Type of AI Response:', typeof newValue)
-  if (newValue) {
-    isLoading.value = false
-  }
 })
 
-// Debug log
-watch(() => isLoading.value, (newValue) => {
-  console.log('isLoading changed:', newValue)
-})
 </script>
 
 <style>

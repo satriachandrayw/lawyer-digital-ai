@@ -1,5 +1,6 @@
 import { ref, Ref } from 'vue'
 import * as pdfjs from 'pdfjs-dist'
+import {useCompletion} from '@ai-sdk/vue'
 import { createWorker, createScheduler } from 'tesseract.js'
 
 const cleanIndonesianText = (text: string): string => {
@@ -24,16 +25,29 @@ const getWorker = async (): Promise<Tesseract.Worker> => {
 interface AIProcessingResult {
   isProcessing: Ref<boolean>
   aiResponse: Ref<string>
-  processFile: (file: File) => Promise<string>
+  processFile: (file: File) => Promise<ReadableStream<Uint8Array>>
   progress: Ref<number>
+  isLoading: Ref<boolean|undefined>
 }
 
 export const useAIProcessing = (): AIProcessingResult => {
   const isProcessing = ref<boolean>(false)
-  const aiResponse = ref<string>('')
   const progress = ref<number>(0)
 
-  const processFile = async (file: File): Promise<string> => {
+  const { complete, completion, isLoading } = useCompletion({
+    api: '/api/process-ai',
+    body: { text: '' }, // We'll update this dynamically
+    onResponse: (response) => {
+      // Optional: Handle the response if needed
+      console.log('Received response from API')
+    },
+    onFinish: (prompt, completion) => {
+      // Optional: Handle completion if needed
+      console.log('AI processing finished')
+    },
+  })
+
+  const processFile = async (file: File): Promise<ReadableStream<Uint8Array>> => {
     isProcessing.value = true
     progress.value = 0
 
@@ -67,7 +81,8 @@ export const useAIProcessing = (): AIProcessingResult => {
             
             const { data: { text: pageText } } = await scheduler.addJob('recognize', dataUrl)
             
-            progress.value = (i / numPages) * 100
+            // Update progress after each page is processed
+            progress.value = (i / numPages) * 80 // 80% for PDF processing
             return pageText
           } catch (error) {
             console.error(`Error processing page ${i}:`, error)
@@ -82,41 +97,24 @@ export const useAIProcessing = (): AIProcessingResult => {
       const cleanedText = cleanIndonesianText(text)
       console.log("Cleaned text length:", cleanedText.length);
 
-      // Call the new API route
-      console.log("Sending request to /api/process-ai");
-      const response = await fetch('/api/process-ai', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ text: cleanedText }),
-      })
+      // Use the complete function from useCompletion with the cleaned text
+      await complete(cleanedText)
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error("API response not OK:", response.status, errorText);
-        throw new Error(`Processing failed: ${response.status} ${response.statusText}\n${errorText}`);
-      }
-
-      const result = await response.json()
-      aiResponse.value = result.response
-      console.log('Received AI Response, length:', aiResponse.value.length);
-
-      return aiResponse.value
+      // Update progress to 100% after sending to process-ai
+      progress.value = 100
     } catch (error) {
       console.error('Error processing PDF:', error)
-      aiResponse.value = 'Error: ' + ((error as Error).message || 'Unknown error occurred')
       throw error
     } finally {
       isProcessing.value = false
-      progress.value = 100
     }
   }
 
   return {
     isProcessing,
-    aiResponse,
+    aiResponse: completion,
     processFile,
     progress,
+    isLoading
   }
 }
