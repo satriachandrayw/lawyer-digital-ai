@@ -31,17 +31,15 @@
       <p class="text-sm text-gray-600 mt-1">Progress: {{ Math.round(progress) }}%</p>
     </div>
     
-    <div v-if="isLoading" class="bg-gray-100 p-4 rounded-md mb-4">
-      <h2 class="text-xl font-semibold mb-2 text-black">Memuat Respons AI:</h2>
-      <p class="text-black mb-2">Menerima respons dari model AI...</p>
-      <div class="w-full flex justify-center">
+    <div class="bg-gray-100 p-4 rounded-md mb-4">
+      <h2 class="text-xl font-semibold mb-2 text-black">{{ isLoading ? 'Memuat Respons AI:' : 'Respons AI:' }}</h2>
+      <p class="text-black mb-2">{{ isLoading ? 'Menerima respons dari model AI...' : '' }}</p>
+      <div v-if="isLoading" class="w-full flex justify-center">
         <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
       </div>
-    </div>
-    
-    <div v-if="aiResponse" class="bg-gray-100 p-4 rounded-md">
-      <h2 class="text-xl font-semibold mb-2 text-black">Respons AI:</h2>
-      <VueMarkdown :source="aiResponse" :options="markdownOptions" class="prose text-black" />
+      <div v-if="!isLoading && aiResponse" class="prose text-black">
+        <VueMarkdown :source="aiResponse" :options="markdownOptions" />
+      </div>
     </div>
     
     <div v-if="error" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mt-4" role="alert">
