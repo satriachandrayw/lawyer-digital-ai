@@ -20,14 +20,16 @@ export default defineEventHandler(async (event) => {
       console.log("Finalizing processing")
       const stream = await finalizeProcessing()
       return stream.toDataStreamResponse()
-    } else {
+    }
+    else {
       console.log("Processing text chunk of length:", body.prompt.length)
-      const {text} = await processWithOpenAIStream(body.prompt, {
-        headers: {
-          'X-Title': 'Indonesian Legal Document Analyzer',
-        },
-      })
-      return text
+      await processWithOpenAIStream(body.prompt)
+      // const {text} = await processWithOpenAIStream(body.prompt, {
+      //   headers: {
+      //     'X-Title': 'Indonesian Legal Document Analyzer',
+      //   },
+      // })
+      // return text
     }
   } catch (error) {
     console.error('Error processing text:', error)
