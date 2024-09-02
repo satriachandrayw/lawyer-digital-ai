@@ -8,7 +8,8 @@ const route = useRoute()
 
 const tabs = [
   { name: 'Home', href: '/' },
-  { name: 'Upload Respon Gugatanmu', href: '/upload-respon-gugatanmu' }
+  { name: 'Upload Respon Gugatanmu', href: '/upload-respon-gugatanmu' },
+  { name: 'Journal Creator', href: '/essay' }
 ]
 
 const activeTab = computed(() => {

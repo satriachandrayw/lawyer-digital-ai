@@ -1,8 +1,10 @@
 import { createOpenRouter } from '@openrouter/ai-sdk-provider'
-import { generateText, OpenAIStream, streamText } from 'ai'
+import { generateText, streamText, generateObject } from 'ai'
+import { z } from 'zod'
 
 import { retryWithExponentialBackoff } from '@/utils/promise'
 import { splitTextIntoChunks } from '@/utils/text'
+import { responGugatanMessage } from '@/constants/prompt';
 
 // Initialize OpenRouter client
 const openrouter = createOpenRouter({
@@ -113,10 +115,63 @@ export const processWithOpenAIFull = async (text: string, options = {}) => {
 
   const finalOptions = { ...defaultOptions, ...options, messages: finalMessages };
   try {
-    const finalResponse = await retryWithExponentialBackoff(() => openrouter.chat.completions.create(finalOptions));
-    return finalResponse.choices[0].message.content;
+    const response = await retryWithExponentialBackoff(() => generateText(finalOptions));
+    return response
   } catch (error) {
     console.error('Error processing final response:', error);
+    throw error;
+  }
+}
+
+export const processStructuredData = async (text: string, documentType: string, options = {}) => {
+  let schema, prompt;
+  
+  const defaultOptions = {
+    model: openrouter('openai/gpt-4o-mini'),
+    temperature: 0.7,
+    stream: false,
+    headers: {
+      'HTTP-Referer': 'https://your-site.com',
+    },
+  }
+  
+  const essaySchema = z.object({
+    essay: z.object({
+      title: z.string(),
+      introduction: z.string(),
+      sections: z.array(z.object({
+        title: z.string(),
+      })),
+      conclusion: z.string(),
+    }),
+  });
+
+  const journalSchema = z.object({
+    journal: z.object({
+      title: z.string(),
+      tableOfContent: z.array(z.object({
+        title: z.string(),
+      })),
+    }),
+  });
+
+  if (documentType === 'essay') {
+    schema = essaySchema;
+    prompt = `Generate an main idea for an essay based on the topic: ${text}`;
+  } else if (documentType === 'journal') {
+    schema = journalSchema;
+    prompt = `Extract a journal paper research format (like abstract, intro, methods, etc.) based on the topic: ${text}`;
+  } else {
+    throw new Error('Invalid type option. Expected "essay" or "journal".');
+  }
+
+  const mergedOptions = { ...defaultOptions, ...options, prompt, schema };
+
+  try {
+    const {object} = await retryWithExponentialBackoff(() => generateObject(mergedOptions));
+    return object
+  } catch (error) {
+    console.error('Error processing structured data:', error);
     throw error;
   }
 }
@@ -146,63 +201,14 @@ export const  processWithOpenAIStream = async (text: string, options = {}) => {
 export const finalizeProcessing = async (options = {}) => {
   const defaultOptions = {
     model: openrouter('google/gemini-pro-1.5'),
-    temperature: 0.7,
+    temperature: 0.2,
     stream: true,
     headers: {
       'HTTP-Referer': 'https://your-site.com',
     },
   }
 
-  const messages = [
-    { role: 'system', content: `Anda adalah asisten hukum yang ahli dalam membuat surat respon gugatan dan eksepsi hukum Indonesia. Berdasarkan analisis dokumen yang telah dilakukan, buatlah surat respon gugatan dan eksepsi yang komprehensif dan akurat berdasarkan literatur hukum yang ada. Pastikan bahwa surat tersebut tidak mengandung kesalahan bahasa atau ejaan.
-      
-      Format surat respon gugatan:
-      1. **Tanggal dan Nomor Surat**: [Tanggal], [Nomor Surat]
-      2. **Alamat Tujuan**: 
-        - Hakim Pemeriksa Perkara No. [Nomor Perkara]
-        - Pengadilan Negeri [Nama Pengadilan]
-        - [Alamat Pengadilan]
-      3. **Perihal**: Eksepsi dan Jawaban Tergugat pada Perkara Gugatan Sederhana No. [Nomor Perkara]
-      4. **Identitas Pihak**:
-        - **Penggugat**: [Nama Penggugat], [Alamat Penggugat]
-        - **Tergugat**: [Nama Tergugat], [Alamat Tergugat]
-        - **Kuasa Hukum**: 
-          - Nama: [Nama Kuasa Hukum]
-          - NIK: [NIK Kuasa Hukum]
-          - Tempat/Tanggal Lahir: [TTL Kuasa Hukum]
-          - Jenis Kelamin: [Jenis Kelamin]
-          - Warga Negara: [Warga Negara]
-          - Agama: [Agama]
-          - Pekerjaan: [Pekerjaan]
-          - Status Kawin: [Status Kawin]
-          - Pendidikan: [Pendidikan]
-          - NIA: [NIA Kuasa Hukum]
-      5. **Eksepsi**:
-        - [Detail Eksepsi Error in Persona]
-        - [Detail Plurium Litis Consortium]
-        - [Detail Obscuur Libel]
-      6. **Pokok Perkara**:
-        - [Tanggapan terhadap dalil Gugatan]
-        - [Argumen hukum yang mendukung Tergugat]
-      7. **Permohonan Putusan**:
-        - [Permohonan untuk menerima eksepsi dan menolak gugatan]
-        - [Permohonan untuk membebankan biaya kepada Penggugat]
-      8. **Penutup**: 
-        - [Pernyataan harapan untuk putusan yang adil]
-        - [Tanda tangan Kuasa Hukum]
-
-        - Pastikan surat tersebut mengikuti format resmi dan menggunakan bahasa hukum yang tepat.
-        - Sertakan literatur hukum yang mendukung argumen Anda sepeti KUHP atau teori hukum.
-        - Pastikan bahwa surat tersebut tidak mengandung kesalahan bahasa atau ejaan.
-        - Gunakan bahasa yang panjang dan rinci.
-        - Sertakan dengan lengkap detail-detail yang ada dalam dokumen seperti daftar isi, tanggal, nama kuasa hukum, dan lainnya dengan panjang dan rinci. 
-        - Sertakan juga dengan kutipan dari dokumen yang ada seperti pasal, ayat, dan lainnya.
-        - Sebutkan juga semua perusahaan yang ada dalam dokumen dengan lengkap, dan sebutkan juga nama, alamat, dan lainnya.
-        - Sebutkan juga semua kontrak yang ada dalam dokumen dengan lengkap, dan sebutkan juga nama, tanggal, dan lainnya.
-      ` },
-
-    { role: 'user', content: `Berikut adalah analisis lengkap dari dokumen hukum. Gunakan ini untuk membuat surat respon gugatan dan eksepsi:\n\n${context}` },
-  ];
+  const messages = responGugatanMessage(context);
 
   const mergedOptions = { ...defaultOptions, ...options, messages }
 
