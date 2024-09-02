@@ -134,8 +134,9 @@ export const  processWithOpenAIStream = async (text: string, options = {}) => {
     // const chunks = splitTextIntoChunks(text, 1000);
     // const stream = await processArrayOfChunk(chunks, options, defaultOptions);
     // console.log( 'stream', stream.text)
-    const stream = await processChunk(text, defaultOptions, options)
-    return stream
+      context += text + '\n'
+    // const stream = await processChunk(text, defaultOptions, options)
+    // return stream
   } catch (error) {
     console.error('Error processing stream response:', error)
     throw error
@@ -144,7 +145,7 @@ export const  processWithOpenAIStream = async (text: string, options = {}) => {
 
 export const finalizeProcessing = async (options = {}) => {
   const defaultOptions = {
-    model: openrouter('openai/gpt-4o-mini'),
+    model: openrouter('google/gemini-pro-1.5'),
     temperature: 0.7,
     stream: true,
     headers: {
@@ -153,7 +154,7 @@ export const finalizeProcessing = async (options = {}) => {
   }
 
   const messages = [
-    { role: 'system', content: `Anda adalah asisten hukum yang ahli dalam membuat surat respon gugatan hukum Indonesia. Berdasarkan analisis dokumen yang telah dilakukan, buatlah surat respon gugatan yang komprehensif dan akurat berdasarkan literatur hukum yang ada. Pastikan bahwa surat tersebut tidak mengandung kesalahan bahasa atau ejaan.
+    { role: 'system', content: `Anda adalah asisten hukum yang ahli dalam membuat surat respon gugatan dan eksepsi hukum Indonesia. Berdasarkan analisis dokumen yang telah dilakukan, buatlah surat respon gugatan dan eksepsi yang komprehensif dan akurat berdasarkan literatur hukum yang ada. Pastikan bahwa surat tersebut tidak mengandung kesalahan bahasa atau ejaan.
       
       Format surat respon gugatan:
       1. **Tanggal dan Nomor Surat**: [Tanggal], [Nomor Surat]
@@ -175,6 +176,7 @@ export const finalizeProcessing = async (options = {}) => {
           - Pekerjaan: [Pekerjaan]
           - Status Kawin: [Status Kawin]
           - Pendidikan: [Pendidikan]
+          - NIA: [NIA Kuasa Hukum]
       5. **Eksepsi**:
         - [Detail Eksepsi Error in Persona]
         - [Detail Plurium Litis Consortium]
@@ -192,11 +194,14 @@ export const finalizeProcessing = async (options = {}) => {
         - Pastikan surat tersebut mengikuti format resmi dan menggunakan bahasa hukum yang tepat.
         - Sertakan literatur hukum yang mendukung argumen Anda sepeti KUHP atau teori hukum.
         - Pastikan bahwa surat tersebut tidak mengandung kesalahan bahasa atau ejaan.
-        - Gunakan bahasa yang panjang dan rinci
-        - Sertakan dengan lengkap detail-detail yang ada dalam dokumen seperti daftar isi, tanggal, nama, dan lainnya. 
+        - Gunakan bahasa yang panjang dan rinci.
+        - Sertakan dengan lengkap detail-detail yang ada dalam dokumen seperti daftar isi, tanggal, nama kuasa hukum, dan lainnya dengan panjang dan rinci. 
+        - Sertakan juga dengan kutipan dari dokumen yang ada seperti pasal, ayat, dan lainnya.
+        - Sebutkan juga semua perusahaan yang ada dalam dokumen dengan lengkap, dan sebutkan juga nama, alamat, dan lainnya.
+        - Sebutkan juga semua kontrak yang ada dalam dokumen dengan lengkap, dan sebutkan juga nama, tanggal, dan lainnya.
       ` },
 
-    { role: 'user', content: `Berikut adalah analisis lengkap dari dokumen hukum. Gunakan ini untuk membuat surat respon gugatan:\n\n${context}` },
+    { role: 'user', content: `Berikut adalah analisis lengkap dari dokumen hukum. Gunakan ini untuk membuat surat respon gugatan dan eksepsi:\n\n${context}` },
   ];
 
   const mergedOptions = { ...defaultOptions, ...options, messages }
