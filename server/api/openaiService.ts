@@ -222,7 +222,7 @@ export const processWithOpenAIStream = async (messages: any, options = {}) => {
 export const processObjectStructureStreaming = async (messages: any, options = {}) => {
   const defaultOptions = {
     model: openrouter('openai/gpt-4o-mini'),
-    temperature: 0.8,
+    temperature: 1.2,
     stream: true,
     headers: {
       'HTTP-Referer': 'https://your-site.com',
