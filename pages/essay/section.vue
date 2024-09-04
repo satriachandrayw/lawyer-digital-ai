@@ -1,9 +1,13 @@
 <template>
   <div class="container mx-auto px-4">
     <h1 class="text-3xl font-bold mb-4">Outline for: {{ topic }}</h1>
-    <div class="mb-8">
+    <div class="mb-8 space-y-4">
       <template v-if="isLoading">
-        <LoadingSpinner />
+        <Skeleton class="h-6 w-[80%]" /> 
+        <Skeleton class="h-6 w-[70%]" /> 
+        <Skeleton class="h-6 w-[90%]" /> 
+        <Skeleton class="h-6 w-[60%]" /> 
+        <Skeleton class="h-6 w-[70%]" /> 
       </template>
       <template v-else>
         <ul class="list-disc pl-5">
@@ -52,10 +56,9 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, nextTick, computed } from 'vue';
+import { onMounted, nextTick, computed, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import LoadingSpinner from '@/components/ui/loading-spinner/LoadingSpinner.vue';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import {Skeleton} from '@/components/ui/skeleton'; // Import the SkeletonLoader component
 import { Icon } from '@iconify/vue';
 import { useEssayStore } from '@/stores/essayStore';
 import { storeToRefs } from 'pinia';
