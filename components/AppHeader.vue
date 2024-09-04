@@ -13,6 +13,10 @@ const tabs = [
 ]
 
 const activeTab = computed(() => {
+  // Set activeTab to 'Journal Creator' if the route starts with '/essay'
+  if (route.path.startsWith('/essay')) {
+    return tabs[2]; // Journal Creator tab
+  }
   return tabs.find(tab => tab.href === route.path) || tabs[0]
 })
 
