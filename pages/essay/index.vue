@@ -13,15 +13,16 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import Input from '@/components/ui/input/Input.vue';
 import Button from '@/components/ui/button/Button.vue';
 import { Radio } from '@/components/ui/radio';
+import { useEssayStore } from '@/stores/essayStore';
+import { storeToRefs } from 'pinia';
 
-const topic = ref('');
-const documentType = ref('essay'); // Default to 'essay'
 const router = useRouter();
+const essayStore = useEssayStore();
+const { topic, documentType } = storeToRefs(essayStore);
 
 const generateSection = async () => {
   if (topic.value && documentType.value) {

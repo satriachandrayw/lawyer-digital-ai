@@ -52,3 +52,21 @@ export const responGugatanMessage = (context: string) => [
     content: `Berikut adalah analisis lengkap dari dokumen hukum. Gunakan ini untuk membuat surat respon gugatan dan eksepsi:\n\n${context}` 
   },
 ];
+
+export const essayContentMessage = (topic: string, index: number, section: string) => {
+
+  const prompt = `Buatlah paragraf untuk section ${index + 1}: ${section} 
+  berdasarkan topic berikut: "${topic}".
+  tulis dengan detail dan terstruktur.`
+
+  return [
+  {
+    role: 'system',
+    content: `anda adalah profesor membuat essay berbahasa indonesia yang ahli`
+  },
+  {
+    role: 'user',
+    content: `${prompt}`
+  }
+]
+}

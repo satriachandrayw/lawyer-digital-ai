@@ -10,7 +10,7 @@
           <li
             v-for="section in sections"
             :key="section.title"
-            class="mb-2 text-2xl font-bold cursor-pointer hover:text-primary flex items-center justify-between"
+            class="mb-2 text-xl font-bold cursor-pointer hover:text-primary flex items-center justify-between"
           >
             <span v-if="!section.editing" class="flex-grow">
               {{ section.title }}
@@ -44,24 +44,27 @@
         </ul>
       </template>
     </div>
-    <div class="flex justify-end mt-4" v-if="!isAnyEditing && sections.length > 0">
+    <div class="flex justify-between mt-4" v-if="!isAnyEditing && sections.length > 0">
+      <button @click="goToIndex" class="btn">Back</button>
       <button @click="goToEdit" class="btn">Next</button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, nextTick, computed } from 'vue';
+import { onMounted, nextTick, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import LoadingSpinner from '@/components/ui/loading-spinner/LoadingSpinner.vue';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Icon } from '@iconify/vue';
+import { useEssayStore } from '@/stores/essayStore';
+import { storeToRefs } from 'pinia';
 
 const router = useRouter();
 const route = useRoute();
-const topic = ref(route.query.topic as string);
-const documentType = ref(route.query.documentType as string);
-const sections = ref<{ title: string; editing?: boolean; editTitle?: string }[]>([]);
+const essayStore = useEssayStore();
+const { topic, documentType, sections } = storeToRefs(essayStore);
+
 const isLoading = ref(false);
 
 const fetchOutline = async () => {
@@ -77,7 +80,7 @@ const fetchOutline = async () => {
 
     if (response.ok) {
       const { essay } = await response.json();
-      sections.value = essay.sections.map(section => ({ ...section, editing: false, editTitle: section.title }));
+      essayStore.setSections(essay.sections.map(section => ({ ...section, editing: false, editTitle: section.title })));
     }
   } catch (error) {
     console.error('Error fetching outline:', error);
@@ -112,7 +115,20 @@ const goToEdit = () => {
   router.push(`/essay/edit?topic=${topic.value}&outline=${outline}`);
 };
 
-onMounted(fetchOutline);
+// New method to route back to index
+const goToIndex = () => {
+  router.push('/essay');
+};
+
+onMounted(() => {
+  if (route.query.topic) {
+    essayStore.setTopic(route.query.topic as string);
+  }
+  if (route.query.documentType) {
+    essayStore.setDocumentType(route.query.documentType as string);
+  }
+  fetchOutline();
+});
 </script>
 
 <style scoped>

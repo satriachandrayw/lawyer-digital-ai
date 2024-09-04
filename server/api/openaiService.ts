@@ -1,6 +1,6 @@
 import { createOpenRouter } from '@openrouter/ai-sdk-provider'
-import { generateText, streamText, generateObject } from 'ai'
-import { z } from 'zod'
+import { generateText, streamText, generateObject, streamObject } from 'ai'
+import { set, z } from 'zod'
 
 import { retryWithExponentialBackoff } from '@/utils/promise'
 import { splitTextIntoChunks } from '@/utils/text'
@@ -176,24 +176,66 @@ export const processStructuredData = async (text: string, documentType: string, 
   }
 }
 
-export const  processWithOpenAIStream = async (text: string, options = {}) => {
+// export const  processWithOpenAIStream = async (text: string, options = {}) => {
+//   const defaultOptions = {
+//     model: openrouter('openai/gpt-4o-mini'),
+//     temperature: 0.7,
+//     stream: true,
+//     headers: {
+//       'HTTP-Referer': 'https://your-site.com',
+//     },
+//   }
+//   try {
+//     // const chunks = splitTextIntoChunks(text, 1000);
+//     // const stream = await processArrayOfChunk(chunks, options, defaultOptions);
+//     // console.log( 'stream', stream.text)
+//       context += text + '\n'
+//     // const stream = await processChunk(text, defaultOptions, options)
+//     // return stream
+//   } catch (error) {
+//     console.error('Error processing stream response:', error)
+//     throw error
+//   }
+// }
+
+export const processWithOpenAIStream = async (messages: any, options = {}) => {
   const defaultOptions = {
     model: openrouter('openai/gpt-4o-mini'),
-    temperature: 0.7,
+    temperature: 0.8,
     stream: true,
     headers: {
       'HTTP-Referer': 'https://your-site.com',
     },
   }
+
+  const mergedOptions = { ...defaultOptions, ...options, messages }
+
   try {
-    // const chunks = splitTextIntoChunks(text, 1000);
-    // const stream = await processArrayOfChunk(chunks, options, defaultOptions);
-    // console.log( 'stream', stream.text)
-      context += text + '\n'
-    // const stream = await processChunk(text, defaultOptions, options)
-    // return stream
+    const response = await streamText(mergedOptions)
+    return response
   } catch (error) {
-    console.error('Error processing stream response:', error)
+    console.error('Error processing final response:', error)
+    throw error
+  }
+}
+
+export const processObjectStructureStreaming = async (messages: any, options = {}) => {
+  const defaultOptions = {
+    model: openrouter('openai/gpt-4o-mini'),
+    temperature: 0.8,
+    stream: true,
+    headers: {
+      'HTTP-Referer': 'https://your-site.com',
+    },
+  }
+
+  const mergedOptions = { ...defaultOptions, ...options, messages }
+  
+  try {
+    const stream = await streamObject(mergedOptions)
+    return stream
+  } catch (error) {
+    console.error('Error processing final response:', error)
     throw error
   }
 }

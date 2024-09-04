@@ -17,7 +17,8 @@ export default defineNuxtConfig({
   },
   modules: [
     '@nuxtjs/color-mode',
-    'shadcn-nuxt'
+    'shadcn-nuxt',
+    '@pinia/nuxt'
   ],
   colorMode: {
     classSuffix: ''
