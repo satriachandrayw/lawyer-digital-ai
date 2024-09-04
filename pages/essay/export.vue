@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useRoute } from 'vue-router';
-import { saveAs } from 'file-saver';
+// import { saveAs } from 'file-saver';
 
 const route = useRoute();
 const topic = route.query.topic as string;
