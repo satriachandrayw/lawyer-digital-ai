@@ -12,19 +12,22 @@
       <template v-else>
         <ul class="list-disc pl-5">
           <li
-            v-for="section in sections"
+            v-for="(section, index) in sections"
             :key="section.title"
             class="mb-2 text-xl font-bold cursor-pointer hover:text-primary flex items-center justify-between"
           >
-            <span v-if="!section.editing" class="flex-grow">
+            <span v-if="!section.editing && !section.isRegenerating" class="flex-grow">
               {{ section.title }}
             </span>
+            <template v-else-if="section.isRegenerating">
+              <Skeleton class="h-6 w-[80%]" /> <!-- Show skeleton for regenerating section -->
+            </template>
             <input
               v-else
               v-model="section.editTitle"
               @keyup.enter="updateSectionTitle(section)"
               @blur="updateSectionTitle(section)"
-              class="flex-grow px-2 py-1 text-2xl font-bold bg-transparent focus:outline-none focus:ring-0 border-none text-left"
+              class="flex-grow px-2 py-1 text-xl font-bold bg-transparent focus:outline-none focus:ring-0 border-none text-left"
               :ref="el => { if (el) el.focus() }"
             />
             <Popover>
@@ -35,9 +38,9 @@
               </PopoverTrigger>
               <PopoverContent class="w-56">
                 <div class="flex flex-col space-y-2">
-                  <!-- <button @click="regenerateOutline" class="flex items-center px-4 py-2 bg-blue-500 text-white rounded">
+                  <button @click="regenerateSection(index)" class="flex items-center px-4 py-2 bg-blue-500 text-white rounded">
                     <span class="mr-2">🔄</span> Regenerate
-                  </button> -->
+                  </button>
                   <button @click="editOutline(section)" class="flex items-center px-4 py-2 bg-green-500 text-white rounded">
                     <span class="mr-2">✏️</span> Edit
                   </button>
@@ -83,7 +86,7 @@ const fetchOutline = async () => {
 
     if (response.ok) {
       const { essay } = await response.json();
-      essayStore.setSections(essay.sections.map(section => ({ ...section, editing: false, editTitle: section.title })));
+      essayStore.setSections(essay.sections.map(section => ({ ...section, editing: false, editTitle: section.title, isRegenerating: false })));
     }
   } catch (error) {
     console.error('Error fetching outline:', error);
@@ -94,6 +97,36 @@ const fetchOutline = async () => {
 
 const regenerateOutline = async () => {
   await fetchOutline();
+};
+
+const regenerateSection = async (index: number) => {
+  sections.value[index].isRegenerating = true; // Set the regenerating state for the selected section
+  try {
+    const response = await fetch('/api/essay/section', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        topic: topic.value,
+        documentType: documentType.value,
+        sectionIndex: index,
+        currentSections: sections.value.map(s => s.title),
+      }),
+    });
+
+    if (response.ok) {
+      const { essay } = await response.json();
+      essayStore.updateSection(index, {
+        ...sections.value[index],
+        title: essay.section.title,
+      });
+    }
+  } catch (error) {
+    console.error('Error regenerating section:', error);
+  } finally {
+    sections.value[index].isRegenerating = false; // Reset the regenerating state
+  }
 };
 
 const isAnyEditing = computed(() => sections.value.some(section => section.editing));

@@ -56,6 +56,11 @@ export default defineNuxtConfig({
       VitePluginCommonjs({
         filter: (id) => id.includes('pdfjs-dist')
       })
-    ]
+    ],
+    server: {
+      watch: {
+        usePolling: true
+      }
+    }
   }
 })

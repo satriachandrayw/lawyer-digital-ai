@@ -123,49 +123,18 @@ export const processWithOpenAIFull = async (text: string, options = {}) => {
   }
 }
 
-export const processStructuredData = async (text: string, documentType: string, options = {}) => {
-  let schema, prompt;
+export const processStructuredData = async (messages: any, options = {}) => {
   
   const defaultOptions = {
     model: openrouter('openai/gpt-4o-mini'),
-    temperature: 0.7,
+    temperature: 0.8,
     stream: false,
     headers: {
       'HTTP-Referer': 'https://your-site.com',
     },
   }
-  
-  const essaySchema = z.object({
-    essay: z.object({
-      title: z.string(),
-      introduction: z.string(),
-      sections: z.array(z.object({
-        title: z.string(),
-      })),
-      conclusion: z.string(),
-    }),
-  });
 
-  const journalSchema = z.object({
-    journal: z.object({
-      title: z.string(),
-      tableOfContent: z.array(z.object({
-        title: z.string(),
-      })),
-    }),
-  });
-
-  if (documentType === 'essay') {
-    schema = essaySchema;
-    prompt = `Generate an main idea for an essay based on the topic: ${text}`;
-  } else if (documentType === 'journal') {
-    schema = journalSchema;
-    prompt = `Extract a journal paper research format (like abstract, intro, methods, etc.) based on the topic: ${text}`;
-  } else {
-    throw new Error('Invalid type option. Expected "essay" or "journal".');
-  }
-
-  const mergedOptions = { ...defaultOptions, ...options, prompt, schema };
+  const mergedOptions = { ...defaultOptions, ...options, messages };
 
   try {
     const {object} = await retryWithExponentialBackoff(() => generateObject(mergedOptions));

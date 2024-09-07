@@ -70,3 +70,19 @@ export const essayContentMessage = (topic: string, index: number, section: strin
   }
 ]
 }
+
+export const essaySectionMessage = (topic: string, documentType: string, sectionIndex: number, currentSections: string[]) => {
+  const prompt = `
+    Given an essay on the topic "${topic}" of type "${documentType}", 
+    with the following current section titles:
+    ${currentSections.map((title, index) => `${index + 1}. ${title}`).join('\n')}
+
+    Please regenerate the section at index ${sectionIndex + 1} (currently "${currentSections[sectionIndex]}").
+    Provide a new title and brief content for this section that fits well with the other sections and maintains the overall flow of the essay.
+  `
+
+  return [
+    { role: 'system', content: 'You are an expert essay writer assistant in Indonesia.' },
+    { role: 'user', content: prompt }
+  ]
+}
