@@ -27,7 +27,7 @@
               v-model="section.editTitle"
               @keyup.enter="updateSectionTitle(section)"
               @blur="updateSectionTitle(section)"
-              class="flex-grow px-2 py-1 text-xl font-bold bg-transparent focus:outline-none focus:ring-0 border-none text-left"
+              class="flex-grow px-2 py-1 text-xl font-bold bg-transparent focus:ring-0 text-left"
               :ref="el => { if (el) el.focus() }"
             />
             <Popover>
@@ -147,13 +147,13 @@ const updateSectionTitle = async (section: { title: string; editing?: boolean; e
 };
 
 const goToEdit = () => {
-  router.push(`/essay/edit`);
+  router.push(`/essay/v0/edit`);
 };
 
 // New method to route back to index and clear sections
 const goToIndex = () => {
   essayStore.clearSections();
-  router.push('/essay');
+  router.push('/essay/v0');
 };
 
 onMounted(() => {
