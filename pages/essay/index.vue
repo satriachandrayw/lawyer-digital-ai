@@ -27,7 +27,7 @@ const { topic, documentType } = storeToRefs(essayStore);
 const generateSection = async () => {
   if (topic.value && documentType.value) {
     try {  
-      router.push(`/essay/section?topic=${topic.value}&documentType=${documentType.value}`);
+      router.push(`/essay/section`);
     } catch (error) {
       console.error('Error generating outline:', error);
     }

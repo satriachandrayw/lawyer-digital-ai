@@ -18,6 +18,9 @@ export const useEssayStore = defineStore('essay', {
     },
     updateSection(index: number, updatedSection: string) {
       this.sections[index] = updatedSection;
+    },
+    clearSections() {
+      this.sections = [];
     }
   }
 })

@@ -1,6 +1,6 @@
 <template>
   <div class="container mx-auto px-4">
-    <h1 class="text-3xl font-bold mb-4">Outline for: {{ topic }}</h1>
+    <h1 class="text-3xl font-bold mb-4">Edit Outline For: {{ topic }}</h1>
     <div class="mb-8 space-y-4">
       <template v-if="isLoading">
         <Skeleton class="h-6 w-[80%]" /> 
@@ -147,24 +147,21 @@ const updateSectionTitle = async (section: { title: string; editing?: boolean; e
 };
 
 const goToEdit = () => {
-  const outline = JSON.stringify(sections.value.map(section => section.title));
-  router.push(`/essay/edit?topic=${topic.value}&outline=${outline}`);
+  router.push(`/essay/edit`);
 };
 
-// New method to route back to index
+// New method to route back to index and clear sections
 const goToIndex = () => {
+  essayStore.clearSections();
   router.push('/essay');
 };
 
 onMounted(() => {
-  if (route.query.topic) {
-    essayStore.setTopic(route.query.topic as string);
-  }
-  if (route.query.documentType) {
-    essayStore.setDocumentType(route.query.documentType as string);
-  }
-  fetchOutline();
+  if (essayStore.sections.length === 0) {
+    fetchOutline();
+  } 
 });
+
 </script>
 
 <style scoped>

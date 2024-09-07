@@ -1,9 +1,9 @@
 <template>
   <div class="container mx-auto p-4">
-    <h1 class="text-2xl font-bold mb-4">Edit Outline for: {{ topic }}</h1>
+    <h1 class="text-3xl font-bold mb-4">Edit Content for: {{ topic }}</h1>
     <div v-for="(section, index) in sections" :key="index" class="mb-6">
       <div class="flex items-center justify-between mb-2">
-        <h2 class="text-xl font-semibold">{{ section }}</h2>
+        <h2 class="text-xl font-semibold">{{ section.title }}</h2>
         <Popover v-if="content[index]">
           <PopoverTrigger asChild>
             <button class="p-1 rounded-full hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
@@ -23,7 +23,9 @@
         </Popover>
       </div>
       <div v-if="!content[index] && !isProcessing[index]" class="p-4 border rounded">
-        <button @click="generateContent(index)" class="btn">Generate Content</button>
+        <button @click="generateContent(index)" class="btn">          
+          <Icon icon="radix-icons:update" class="w-5 h-5" />
+        </button>
       </div>
       <div v-else-if="isProcessing[index]" class="space-y-2">
         <Skeleton class="h-4 w-full" />
@@ -73,15 +75,9 @@ const { complete, completion, error, isLoading } = useCompletion({
 });
 
 onMounted(() => {
-  if (route.query.topic) {
-    essayStore.setTopic(route.query.topic as string);
-  }
-  if (route.query.outline) {
-    const outline = JSON.parse(route.query.outline as string);
-    essayStore.setSections(outline);
-    content.value = new Array(outline.length).fill('');
-    isProcessing.value = new Array(outline.length).fill(false);
-  }
+  // Use the topic and sections from pinia
+  content.value = new Array(sections.value.length).fill('');
+  isProcessing.value = new Array(sections.value.length).fill(false);
 });
 
 const generateContent = async (index: number) => {
@@ -91,7 +87,7 @@ const generateContent = async (index: number) => {
   content.value[index] = ''; // Clear existing content
 
   try {
-    await complete(sections.value[index], {
+    await complete(sections.value[index].title, {
       body: { topic: topic.value, index }
     });
 
