@@ -38,7 +38,7 @@
     </div>
     <div class="flex justify-between mt-6">
       <button @click="goBack" class="btn">Back</button>
-      <button @click="exportEssay" class="btn">Export</button>
+      <button @click="composeEssay" class="btn">Compose</button>
     </div>
   </div>
 </template>
@@ -46,7 +46,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { useCompletion } from '@ai-sdk/vue'
+import { useCompletion } from '@ai-sdk/vue';
 import { useEssayStore } from '@/stores/essayStore';
 import { storeToRefs } from 'pinia';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -56,7 +56,7 @@ import { Icon } from '@iconify/vue';
 const route = useRoute();
 const router = useRouter();
 const essayStore = useEssayStore();
-const { topic, sections } = storeToRefs(essayStore);
+const { topic, sections, contents } = storeToRefs(essayStore); // Access contents from the store
 
 const content = ref<string[]>([]);
 const isProcessing = ref<boolean[]>([]);
@@ -75,7 +75,6 @@ const { complete, completion, error, isLoading } = useCompletion({
 });
 
 onMounted(() => {
-  // Use the topic and sections from pinia
   content.value = new Array(sections.value.length).fill('');
   isProcessing.value = new Array(sections.value.length).fill(false);
 });
@@ -98,9 +97,11 @@ const generateContent = async (index: number) => {
     try {
       const parsedCompletion = JSON.parse(completion.value);
       content.value[index] = parsedCompletion.essay.section.content;
+      essayStore.updateContent(index, content.value[index]); // Save content to the store
     } catch (parseError) {
       console.error('Error parsing completion:', parseError);
       content.value[index] = completion.value; // Use raw completion if parsing fails
+      essayStore.updateContent(index, content.value[index]); // Save raw content to the store
     }
   } catch (error) {
     console.error(`Error generating content for section ${index + 1}:`, error);
@@ -112,10 +113,12 @@ const generateContent = async (index: number) => {
 
 const goBack = () => {
   router.push('/essay/section');
+  essayStore.clearContents();
 };
 
-const exportEssay = () => {
+const composeEssay = () => {
   // Logic to export content
+  router.push('/essay/compose');
 };
 
 const regenerateContent = async (index: number) => {
