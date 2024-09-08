@@ -20,6 +20,7 @@ export const useAIProcessing = (): AIProcessingResult => {
   const processState = ref<string>('')
   const actualProgress = ref<number>(0)
   const displayProgress = ref<number>(0)
+  const fullText = ref<string>(''); // New ref to accumulate full text
 
   const progress = computed(() => Math.min(displayProgress.value, 100))
 
@@ -45,6 +46,7 @@ export const useAIProcessing = (): AIProcessingResult => {
     processState.value = 'Read PDF'
     actualProgress.value = 0
     displayProgress.value = 0
+    fullText.value = ''; // Reset full text
 
     try {
       pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`
@@ -87,7 +89,7 @@ export const useAIProcessing = (): AIProcessingResult => {
       for (const pagePromise of pagePromises) {
         const pageText = await pagePromise
         if (pageText) {
-          await complete(pageText)
+          fullText.value += pageText + '\n'; // Accumulate full text
           processedPages++
           actualProgress.value = (processedPages / numPages) * 100
           requestAnimationFrame(updateProgress)
@@ -97,7 +99,7 @@ export const useAIProcessing = (): AIProcessingResult => {
       isProcessing.value = false
       processState.value = 'Waiting AI Response'
       // Finalize processing
-      await complete('', { body: { finalize: true } })
+      await complete(fullText.value, { body: { finalize: true } }) // Send full text
 
     } catch (error) {
       console.error('Error processing PDF:', error)

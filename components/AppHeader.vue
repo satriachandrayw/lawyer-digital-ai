@@ -8,10 +8,15 @@ const route = useRoute()
 
 const tabs = [
   { name: 'Home', href: '/' },
-  { name: 'Upload Respon Gugatanmu', href: '/upload-respon-gugatanmu' }
+  { name: 'Upload Respon Gugatanmu', href: '/upload-respon-gugatanmu' },
+  { name: 'Journal Creator', href: '/essay/v1' }
 ]
 
 const activeTab = computed(() => {
+  // Set activeTab to 'Journal Creator' if the route starts with '/essay'
+  if (route.path.startsWith('/essay')) {
+    return tabs[2]; // Journal Creator tab
+  }
   return tabs.find(tab => tab.href === route.path) || tabs[0]
 })
 

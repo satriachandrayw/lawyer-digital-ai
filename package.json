@@ -2,7 +2,7 @@
   "name": "lawyer-digital-ai",
   "private": true,
   "type": "module",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "scripts": {
     "build": "nuxt build",
     "dev": "nuxt dev",
@@ -11,20 +11,27 @@
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
+    "@iconify/vue": "^4.1.2",
     "@nuxtjs/color-mode": "^3.4.4",
     "@openrouter/ai-sdk-provider": "^0.0.5",
-    "@vueuse/core": "^11.0.1",
+    "@pinia/nuxt": "^0.5.4",
+    "@tailwindcss/forms": "^0.5.8",
+    "@tailwindcss/typography": "^0.5.15",
+    "@vueuse/core": "^11.0.3",
     "@vueuse/nuxt": "^11.0.1",
     "ai": "^3.3.17",
     "canvas": "^2.11.2",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
+    "html2pdf.js": "^0.10.2",
     "lucide-react": "^0.435.0",
     "lucide-vue-next": "^0.435.0",
     "nuxt": "^3.13.0",
     "openai": "^4.56.0",
     "pdf-parse": "^1.1.1",
     "pdfjs-dist": "^3.11.174",
+    "pinia": "^2.2.2",
+    "quill": "^2.0.2",
     "radix-vue": "^1.9.4",
     "shadcn-nuxt": "^0.10.4",
     "shadcn-vue": "^0.10.5",
@@ -32,7 +39,8 @@
     "tailwindcss-animate": "^1.0.7",
     "tesseract.js": "^5.1.1",
     "vue": "latest",
-    "vue-markdown-render": "^2.2.1"
+    "vue-markdown-render": "^2.2.1",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@nuxtjs/tailwindcss": "^6.12.1",
@@ -42,5 +50,8 @@
     "postcss": "latest",
     "tailwindcss": "latest",
     "vite-plugin-commonjs": "^0.10.1"
+  },
+  "overrides": {
+    "vue": "latest"
   }
 }

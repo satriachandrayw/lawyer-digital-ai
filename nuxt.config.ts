@@ -17,7 +17,8 @@ export default defineNuxtConfig({
   },
   modules: [
     '@nuxtjs/color-mode',
-    'shadcn-nuxt'
+    'shadcn-nuxt',
+    '@pinia/nuxt'
   ],
   colorMode: {
     classSuffix: ''
@@ -55,6 +56,15 @@ export default defineNuxtConfig({
       VitePluginCommonjs({
         filter: (id) => id.includes('pdfjs-dist')
       })
-    ]
-  }
+    ],
+    server: {
+      watch: {
+        usePolling: true
+      }
+    }
+  },
+  plugins: [
+    { src: '~/plugins/quill.client.ts', mode: 'client' },
+    { src: '~/plugins/html2pdf.client.ts', mode: 'client' }
+  ]
 })
