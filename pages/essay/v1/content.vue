@@ -10,7 +10,7 @@
           <div class="flex-grow">
             <h2 class="text-xl font-bold mb-2">{{ section.title }}</h2>
             <div class="p-4 border rounded">
-              <div v-if="!content[index] && !isProcessing[index]" class="space-y-2">
+              <div v-if="!contents[index] && !isProcessing[index]" class="space-y-2">
                 <Button @click="generateContent(index)" variant="outline">
                   <Icon icon="radix-icons:update" class="w-5 h-5 mr-2" />
                   Generate Content
@@ -22,12 +22,12 @@
                 <Skeleton class="h-4 w-[80%]" />
               </div>
               <div v-else class="whitespace-pre-wrap">
-                {{ content[index] }}
+                {{ contents[index] }}
               </div>
             </div>
           </div>
         </div>
-        <div class="mt-4 flex justify-end space-x-2">
+        <div class="mt-4 flex justify-end space-x-2" v-if="contents[index]"> <!-- Added condition here -->
           <Button @click="regenerateContent(index)" variant="outline" size="sm">
             <Icon icon="radix-icons:update" class="w-4 h-4 mr-2" />
             Regenerate
@@ -62,7 +62,7 @@ const router = useRouter();
 const essayStore = useEssayStore();
 const { topic, sections, contents } = storeToRefs(essayStore);
 
-const content = ref<string[]>([]);
+// Bind content directly to the store's contents
 const isProcessing = ref<boolean[]>([]);
 
 const { complete, completion, error, isLoading } = useCompletion({
@@ -77,7 +77,6 @@ const { complete, completion, error, isLoading } = useCompletion({
 });
 
 onMounted(() => {
-  content.value = new Array(sections.value.length).fill('');
   isProcessing.value = new Array(sections.value.length).fill(false);
 });
 
@@ -85,7 +84,7 @@ const generateContent = async (index: number) => {
   if (isProcessing.value[index]) return; // Prevent multiple generations for the same section
 
   isProcessing.value[index] = true;
-  content.value[index] = ''; // Clear existing content
+  contents.value[index] = ''; // Clear existing content
 
   try {
     await complete(sections.value[index].title, {
@@ -98,16 +97,16 @@ const generateContent = async (index: number) => {
 
     try {
       const parsedCompletion = JSON.parse(completion.value);
-      content.value[index] = parsedCompletion.essay.section.content;
-      essayStore.updateContent(index, content.value[index]); // Save content to the store
+      contents.value[index] = parsedCompletion.essay.section.content;
+      essayStore.updateContent(index, contents.value[index]); // Save content to the store
     } catch (parseError) {
       console.error('Error parsing completion:', parseError);
-      content.value[index] = completion.value; // Use raw completion if parsing fails
-      essayStore.updateContent(index, content.value[index]); // Save raw content to the store
+      contents.value[index] = completion.value; // Use raw completion if parsing fails
+      essayStore.updateContent(index, contents.value[index]); // Save raw content to the store
     }
   } catch (error) {
     console.error(`Error generating content for section ${index + 1}:`, error);
-    content.value[index] = 'Error generating content';
+    contents.value[index] = 'Error generating content';
   } finally {
     isProcessing.value[index] = false;
   }

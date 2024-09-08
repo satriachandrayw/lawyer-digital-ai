@@ -62,5 +62,8 @@ export default defineNuxtConfig({
         usePolling: true
       }
     }
-  }
+  },
+  plugins: [
+    { src: '~/plugins/quill.client.ts', mode: 'client' }
+  ]
 })

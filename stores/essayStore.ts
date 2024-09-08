@@ -5,7 +5,7 @@ export const useEssayStore = defineStore('essay', {
     topic: '',
     documentType: 'essay',
     sections: [] as string[],
-    contents: [] as string[], // New property to store contents
+    contents: [] as string[], // Property to store contents
   }),
   actions: {
     setTopic(topic: string) {
@@ -23,6 +23,9 @@ export const useEssayStore = defineStore('essay', {
     },
     updateContent(index: number, content: string) {
       this.contents[index] = content; // Update content for the specific section
+    },
+    updateFullContent(newContents: string[]) {
+      this.contents = newContents; // Update the entire contents array
     },
     clearContents() {
       this.contents = [];

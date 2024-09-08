@@ -4,7 +4,7 @@
     <p class="text-xl mb-8 text-gray-600">Review and edit the main ideas below</p>
     <div class="mb-8 space-y-4">
       <template v-if="isLoading">
-        <Skeleton v-for="i in 3" :key="i" class="h-24 w-full" />
+        <Skeleton v-for="i in 5" :key="i" class="h-10 w-full" />
       </template>
       <template v-else>
         <div v-for="(section, index) in sections" :key="section.title" class="flex items-start space-x-4">

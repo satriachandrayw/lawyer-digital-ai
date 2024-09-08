@@ -29,13 +29,13 @@ const getSchemaAndMessage = (documentType: string, text: string) => {
   if (documentType === 'essay') {
     schema = essaySchema;
     message = [
-      { role: 'system', content: 'You are an expert essay writer assistant.' },
+      { role: 'system', content: 'You are an expert essay writer assistant In Bahasa Indonesia.' },
       { role: 'user', content: `Generate a main idea for an essay based on the topic: "${text}"` }
     ];
   } else if (documentType === 'journal') {
     schema = journalSchema;
     message = [
-      { role: 'system', content: 'You are an expert journal paper writer assistant.' },
+      { role: 'system', content: 'You are an expert journal paper writer assistant In Bahasa Indonesia.' },
       { role: 'user', content: `Extract a journal paper research format (like abstract, intro, methods, etc.) based on the topic: "${text}"` }
     ];
   } else {
