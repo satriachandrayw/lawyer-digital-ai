@@ -1,3 +1,5 @@
+## Surat Gugatan
+
 [x] set temperature for openai to 0.8 for better accuracy
 [ ] set ui
 [ ] add negative/positive response
@@ -8,12 +10,12 @@
 
 ## bikin AI Create Essay
 
-[ ] create halaman utama untuk input judul
-[ ] create halaman nyusun kerangka (generated AI)
-[ ] create tooltip bisa regenerate
-[ ] isi konten based on kerangka 
-[ ] create halaman edit
-[ ] create halaman export
+[x] create halaman utama untuk input judul
+[x] create halaman nyusun kerangka (generated AI)
+[x] create tooltip bisa regenerate
+[x] isi konten based on kerangka 
+[x] create halaman edit
+[x] create halaman export
 
 --
 

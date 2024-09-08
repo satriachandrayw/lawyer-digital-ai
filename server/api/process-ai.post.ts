@@ -1,6 +1,7 @@
 import { defineEventHandler, readBody } from 'h3'
 
-import { processWithOpenAIStream, finalizeProcessing } from './openaiService'
+import { processWithOpenAIStream } from './openaiService'
+import { responGugatanMessage } from '~/constants/prompt';
 
 export const maxDuration = 300; // Increased to 5 minutes
 
@@ -18,18 +19,11 @@ export default defineEventHandler(async (event) => {
   try {
     if (body.finalize) {
       console.log("Finalizing processing")
-      const stream = await finalizeProcessing()
+
+      const messages = responGugatanMessage(body.prompt);
+      const stream = await processWithOpenAIStream(messages)
+      
       return stream.toDataStreamResponse()
-    }
-    else {
-      console.log("Processing text chunk of length:", body.prompt.length)
-      await processWithOpenAIStream(body.prompt)
-      // const {text} = await processWithOpenAIStream(body.prompt, {
-      //   headers: {
-      //     'X-Title': 'Indonesian Legal Document Analyzer',
-      //   },
-      // })
-      // return text
     }
   } catch (error) {
     console.error('Error processing text:', error)
