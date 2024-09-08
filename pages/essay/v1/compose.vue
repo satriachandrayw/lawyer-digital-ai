@@ -2,7 +2,11 @@
   <div class="container mx-auto px-4 py-8">
     <div class="flex justify-between items-center mb-4">
       <Button @click="goBack" variant="outline">Back</Button>
-      <Button @click="exportEssay" variant="outline">Export</Button>
+      <client-only>
+        <Button @click="exportEssay" variant="outline" :disabled="isExporting">
+          {{ isExporting ? 'Exporting...' : 'Export' }}
+        </Button>
+      </client-only>
     </div>
     <h1 class="text-4xl font-bold mb-2">Document Editor</h1>
     <p class="text-xl text-gray-600 mb-8">
@@ -16,11 +20,11 @@
         ></div>
       </div>
       <template v-else>
-        <div class="flex justify-between items-center mb-4">
+        <!-- <div class="flex justify-between items-center mb-4">
           <h2 class="text-2xl font-bold">{{ documentTitle }}</h2>
-        </div>
+        </div> -->
         <TextEditor
-          v-if="fullEssayContent"
+          ref="textEditorRef"
           v-model="fullEssayContent"
           class="prose-container"
         />
@@ -36,6 +40,8 @@ import { useEssayStore } from "@/stores/essayStore";
 import { storeToRefs } from "pinia";
 import { Button } from "@/components/ui/button";
 import TextEditor from "~/components/editor/TextEditor.vue";
+import { usePdfExport } from '~/composables/usePdfExport';
+import { useNuxtApp } from '#app';
 
 const router = useRouter();
 const essayStore = useEssayStore();
@@ -45,6 +51,10 @@ const isLoading = ref(true);
 const fullEssayContent = ref("");
 
 const documentTitle = computed(() => topic.value || "Untitled Document");
+
+const { isExporting, exportToPdf } = usePdfExport();
+
+const textEditorRef = ref(null);
 
 function formatEssayContent() {
   let formattedContent = `<h1>${topic.value}</h1>`;
@@ -60,9 +70,12 @@ const updateContent = (newContent: string) => {
   // essayStore.updateFullContent(newContent);
 };
 
-const exportEssay = () => {
-  // Implement export functionality here
-  console.log("Exporting essay:", fullEssayContent.value);
+const exportEssay = async () => {
+  if (textEditorRef.value?.quillInstance) {
+    await exportToPdf(textEditorRef.value.quillInstance, `${documentTitle.value}.pdf`);
+  } else {
+    console.error('Quill editor not initialized');
+  }
 };
 
 const goBack = () => {

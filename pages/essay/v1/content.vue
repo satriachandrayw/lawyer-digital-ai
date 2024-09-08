@@ -32,10 +32,10 @@
             <Icon icon="radix-icons:update" class="w-4 h-4 mr-2" />
             Regenerate
           </Button>
-          <Button @click="editContent(index)" variant="outline" size="sm">
+          <!-- <Button @click="editContent(index)" variant="outline" size="sm">
             <Icon icon="radix-icons:pencil" class="w-4 h-4 mr-2" />
             Edit
-          </Button>
+          </Button> -->
         </div>
       </div>
     </div>

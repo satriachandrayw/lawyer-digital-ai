@@ -64,6 +64,7 @@ export default defineNuxtConfig({
     }
   },
   plugins: [
-    { src: '~/plugins/quill.client.ts', mode: 'client' }
+    { src: '~/plugins/quill.client.ts', mode: 'client' },
+    { src: '~/plugins/html2pdf.client.ts', mode: 'client' }
   ]
 })

@@ -18,12 +18,12 @@ const props = defineProps({
 const emit = defineEmits(['update:modelValue']);
 
 const editor = ref(null);
-let quill = null;
+const quillInstance = ref(null);
 
 onMounted(() => {
   const { $quill } = useNuxtApp();
   
-  quill = new $quill(editor.value, {
+  quillInstance.value = new $quill(editor.value, {
     theme: 'snow',
     modules: {
       toolbar: [
@@ -44,23 +44,30 @@ onMounted(() => {
     }
   });
 
-  quill.root.innerHTML = props.modelValue;
+  quillInstance.value.root.innerHTML = props.modelValue;
 
-  quill.on('text-change', () => {
-    emit('update:modelValue', quill.root.innerHTML);
+  quillInstance.value.on('text-change', () => {
+    emit('update:modelValue', quillInstance.value.root.innerHTML);
   });
 });
 
 watch(() => props.modelValue, (newContent) => {
-  if (quill && newContent !== quill.root.innerHTML) {
-    quill.root.innerHTML = newContent;
+  if (quillInstance.value && newContent !== quillInstance.value.root.innerHTML) {
+    quillInstance.value.root.innerHTML = newContent;
   }
 });
+
+// Expose the Quill instance
+defineExpose({ quillInstance });
 </script>
 
 <style>
 .quill-editor {
   border: 1px solid #ccc;
   border-radius: 4px;
+}
+
+.ql-editor {
+  min-height: 200px;
 }
 </style>
