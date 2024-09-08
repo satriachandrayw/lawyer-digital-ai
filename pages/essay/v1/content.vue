@@ -1,6 +1,9 @@
 <template>
   <div class="container mx-auto px-4 py-8">
-    <h1 class="text-4xl font-bold mb-4">Editor's Picks</h1>
+    <div class="flex justify-between items-center mb-6">
+      <h1 class="text-4xl font-bold">Editor's Picks</h1>
+      <Button @click="regenerateAll" variant="outline">Generate All</Button>
+    </div>
     <div class="mb-8 space-y-4">
       <div v-for="(section, index) in sections" :key="index" class="rounded-lg shadow-md p-6">
         <div class="flex items-start space-x-4">
@@ -32,23 +35,28 @@
             <Icon icon="radix-icons:update" class="w-4 h-4 mr-2" />
             Regenerate
           </Button>
-          <!-- <Button @click="editContent(index)" variant="outline" size="sm">
-            <Icon icon="radix-icons:pencil" class="w-4 h-4 mr-2" />
-            Edit
-          </Button> -->
         </div>
       </div>
     </div>
     <div class="flex justify-between mt-6">
       <Button @click="goBack" variant="outline">Back</Button>
-      <Button @click="regenerateAll" variant="outline">Regenerate All</Button>
-      <Button @click="composeEssay">Compose</Button>
+      <div class="flex space-x-2">
+        <div class="w-[100px]"> <!-- Adjust width as needed -->
+          <Button 
+            @click="composeEssay" 
+            v-if="allContentsGenerated"
+            class="w-full"
+          >
+            Compose
+          </Button>
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useCompletion } from '@ai-sdk/vue';
 import { useEssayStore } from '@/stores/essayStore';
@@ -135,4 +143,10 @@ const editContent = (index: number) => {
 const regenerateAll = async () => {
   await Promise.all(sections.value.map((_, index) => generateContent(index)));
 };
+
+const allContentsGenerated = computed(() => 
+  sections.value.length > 0 && 
+  contents.value.length === sections.value.length && 
+  contents.value.every(content => content && content.trim() !== '')
+);
 </script>
