@@ -1,7 +1,7 @@
 import { defineEventHandler, readBody } from 'h3'
 
 import { processWithOpenAIStream } from './openaiService'
-import { responGugatanMessage } from '~/constants/prompt';
+import { responGugatanMessage } from '@/constants/prompt';
 
 export const maxDuration = 300; // Increased to 5 minutes
 

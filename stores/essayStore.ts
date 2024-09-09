@@ -1,38 +1,43 @@
 import { defineStore } from 'pinia'
 
+import type { Section, Essay, EssayState } from '@/types/essay'
+
 export const useEssayStore = defineStore('essay', {
-  state: () => ({
-    topic: '',
+  state: (): EssayState => ({
+    essay: {
+      title: '',
+      sections: [] as Section[]
+    } as Essay,
     documentType: 'essay',
-    sections: [] as string[],
-    contents: [] as string[], // Property to store contents
+    topic: '',
   }),
   actions: {
-    setTopic(topic: string) {
-      this.topic = topic
+    setTitle(title: string) {
+      this.essay.title = title;
     },
     setDocumentType(type: string) {
-      this.documentType = type
+      this.documentType = type;
     },
-    setSections(sections: string[]) {
-      this.sections = sections
-      this.contents = new Array(sections.length).fill(''); // Initialize contents array
+    setTopic(topic: string) {
+      this.topic = topic;
     },
-    updateSection(index: number, updatedSection: string) {
-      this.sections[index] = updatedSection;
+    setSections(sections: Section[]) {
+      this.essay.sections = sections;
     },
-    updateContent(index: number, content: string) {
-      this.contents[index] = content; // Update content for the specific section
+    updateSection(index: number, updatedSection: Partial<Section>) {
+      this.essay.sections[index] = { ...this.essay.sections[index], ...updatedSection };
     },
-    updateFullContent(newContents: string[]) {
-      this.contents = newContents; // Update the entire contents array
-    },
-    clearContents() {
-      this.contents = [];
+    clearEssay() {
+      this.essay = { title: '', sections: [] };
+      this.topic = '';
     },
     clearSections() {
-      this.sections = [];
-      this.contents = []; // Clear contents as well
+      this.essay = { title: this.essay.title, sections: [] };
+    },
+    clearContents() {
+      this.essay.sections.forEach(section => {
+        section.content = '';
+      });
     }
   }
 })

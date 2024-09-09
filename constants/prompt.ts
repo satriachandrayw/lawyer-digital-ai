@@ -79,6 +79,7 @@ export const essaySectionMessage = (topic: string, documentType: string, section
 
     Please regenerate the section at index ${sectionIndex + 1} (currently "${currentSections[sectionIndex]}").
     Provide a new title and brief content for this section that fits well with the other sections and maintains the overall flow of the essay.
+    write down the description just 1 sentence. write the anwser in bahasa indonesia
   `
 
   return [

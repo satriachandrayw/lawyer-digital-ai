@@ -7,14 +7,14 @@
         <Skeleton v-for="i in 5" :key="i" class="h-10 w-full" />
       </template>
       <template v-else>
-        <div v-for="(section, index) in sections" :key="section.title" class="flex items-start space-x-4">
+        <div v-for="(section, index) in essay.sections" :key="section.title" class="flex items-start space-x-4">
           <div class="flex-shrink-0 w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold text-lg">
             {{ index + 1 }}
           </div>
           <div class="flex-grow">
             <template v-if="section.isRegenerating">
               <Skeleton class="h-6 w-[80%] mb-2" />
-              <!-- <Skeleton class="h-4 w-[60%]" /> -->
+              <Skeleton class="h-4 w-[60%]" />
             </template>
             <template v-else>
               <h2 class="text-xl font-bold" v-if="!section.editing">{{ section.title }}</h2>
@@ -24,7 +24,7 @@
                 @blur="updateSectionTitle(section)" 
                 class="flex-grow px-2 py-1 text-xl font-bold bg-transparent focus:outline-none focus:ring-0 text-left"
               />
-              <p class="text-gray-600">{{ section.content }}</p>
+              <p class="text-gray-600">{{ section.description }}</p>
             </template>
           </div>
           <DropdownMenu>
@@ -49,49 +49,46 @@
     </div>
     <div class="flex justify-between mt-4">
       <Button @click="goToIndex" variant="outline">Back</Button>
-      <Button @click="goToEdit" v-if="!isAnyEditing && sections.length > 0">Next</Button>
+      <Button @click="goToEdit" v-if="!isAnyEditing && essay.sections.length > 0">Next</Button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { onMounted, nextTick, computed, ref } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { useRouter } from 'vue-router'
+import { storeToRefs } from 'pinia';
+
+import { Icon } from '@iconify/vue';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
-import { Icon } from '@iconify/vue';
 import { useEssayStore } from '@/stores/essayStore';
-import { storeToRefs } from 'pinia';
+
+import type { Essay, Section } from '@/types/essay';
 
 const router = useRouter();
-const route = useRoute();
 const essayStore = useEssayStore();
-const { topic, documentType, sections } = storeToRefs(essayStore);
+const { essay, topic, documentType } = storeToRefs(essayStore) as { essay: Ref<Essay>, topic: Ref<string>, documentType: Ref<string> };
 
 const isLoading = ref(false);
 
-// Add the following new or modified functions:
-
-const editOutline = (section) => {
+const editOutline = (section: Section) => {
   section.editing = true;
   section.editTitle = section.title;
-  section.editContent = section.content;
 };
 
-const updateSectionTitle = async (section) => {
+const updateSectionTitle = async (section: Section) => {
   if (section.editTitle && section.editTitle.trim() !== '') {
     section.title = section.editTitle.trim();
   }
-
   section.editing = false;
   await nextTick();
 };
 
 const regenerateSection = async (index: number) => {
-  sections.value[index].isRegenerating = true; // Set the regenerating state for the selected section
+  essay.value.sections[index].isRegenerating = true;
   try {
     const response = await fetch('/api/essay/section', {
       method: 'POST',
@@ -102,25 +99,27 @@ const regenerateSection = async (index: number) => {
         topic: topic.value,
         documentType: documentType.value,
         sectionIndex: index,
-        currentSections: sections.value.map(s => s.title),
+        currentSections: essay.value.sections.map(s => s.title),
       }),
     });
 
     if (response.ok) {
-      const { essay } = await response.json();
+      const { sections: responseSections } = await response.json();
+      console.log(responseSections);
+      
       essayStore.updateSection(index, {
-        ...sections.value[index],
-        title: essay.section.title,
+        ...essay.value.sections[index],
+        title: responseSections.title,
+        description: responseSections.description,
       });
     }
   } catch (error) {
     console.error('Error regenerating section:', error);
   } finally {
-    sections.value[index].isRegenerating = false; // Reset the regenerating state
+    essay.value.sections[index].isRegenerating = false;
   }
 };
 
-// Modify the fetchOutline function to include content
 const fetchOutline = async () => {
   isLoading.value = true;
   try {
@@ -133,12 +132,12 @@ const fetchOutline = async () => {
     });
 
     if (response.ok) {
-      const { essay } = await response.json();
-      essayStore.setSections(essay.sections.map(section => ({ 
+      const { essay: responseEssay } = await response.json();
+      essayStore.setTitle(responseEssay.title);
+      essayStore.setSections(responseEssay.sections.map((section: Section) => ({ 
         ...section, 
         editing: false, 
-        editTitle: section.title, 
-        editContent: section.content,
+        editTitle: section.title,
         isRegenerating: false 
       })));
     }
@@ -149,24 +148,20 @@ const fetchOutline = async () => {
   }
 };
 
-const isAnyEditing = computed(() => sections.value.some(section => section.editing));
+const isAnyEditing = computed(() => essay.value.sections.some(section => section.editing));
 
 const goToEdit = () => {
-  router.push(`/essay/v1/content`);
+  router.push(`/essay/content`);
 };
 
-// New method to route back to index and clear sections
 const goToIndex = () => {
-  essayStore.clearSections();
-  router.push('/essay/v1');
+  essayStore.clearEssay();
+  router.push('/essay');
 };
 
 onMounted(() => {
-  if (essayStore.sections.length === 0) {
+  if (essay.value.sections.length === 0) {
     fetchOutline();
   } 
 });
-
-
-// Make sure to update your essayStore to handle the new 'content' field
 </script>

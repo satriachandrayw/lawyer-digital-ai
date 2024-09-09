@@ -15,14 +15,9 @@
 
     <div class="rounded-lg shadow-md p-6 editor-container">
       <div v-if="isLoading" class="flex justify-center items-center h-64">
-        <div
-          class="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"
-        ></div>
+        <div :class="['animate-spin rounded-full h-32 w-32 border-b-2', dark ? 'border-gray-900' : 'border-gray-300']"></div>
       </div>
       <template v-else>
-        <!-- <div class="flex justify-between items-center mb-4">
-          <h2 class="text-2xl font-bold">{{ documentTitle }}</h2>
-        </div> -->
         <TextEditor
           ref="textEditorRef"
           v-model="fullEssayContent"
@@ -41,33 +36,31 @@ import { storeToRefs } from "pinia";
 import { Button } from "@/components/ui/button";
 import TextEditor from "~/components/editor/TextEditor.vue";
 import { usePdfExport } from '~/composables/usePdfExport';
-import { useNuxtApp } from '#app';
 
 const router = useRouter();
 const essayStore = useEssayStore();
-const { topic, sections, contents } = storeToRefs(essayStore);
+const { essay } = storeToRefs(essayStore);
 
 const isLoading = ref(true);
 const fullEssayContent = ref("");
 
-const documentTitle = computed(() => topic.value || "Untitled Document");
+const documentTitle = computed(() => essay.value.title || "Untitled Document");
 
 const { isExporting, exportToPdf } = usePdfExport();
 
 const textEditorRef = ref(null);
 
 function formatEssayContent() {
-  let formattedContent = `<h1>${topic.value}</h1>`;
-  sections.value.forEach((section, index) => {
+  let formattedContent = `<h1>${essay.value.title}</h1>`;
+  essay.value.sections.forEach((section) => {
     formattedContent += `<h2>${section.title}</h2>`;
-    formattedContent += `<p>${contents.value[index] || ""}</p><br>`;
+    formattedContent += `<p>${section.content || ""}</p><br>`;
   });
   return formattedContent;
 }
 
 const updateContent = (newContent: string) => {
   fullEssayContent.value = newContent;
-  // essayStore.updateFullContent(newContent);
 };
 
 const exportEssay = async () => {
@@ -79,13 +72,10 @@ const exportEssay = async () => {
 };
 
 const goBack = () => {
-  router.push("/essay/v1/content");
+  router.push("/essay/content");
 };
 
 onMounted(async () => {
-  // Simulate an asynchronous operation (e.g., fetching data)
-  await new Promise(resolve => setTimeout(resolve, 1000));
-
   fullEssayContent.value = formatEssayContent();
   isLoading.value = false;
 });

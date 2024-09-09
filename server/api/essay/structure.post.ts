@@ -5,11 +5,10 @@ import { z } from 'zod';
 const essaySchema = z.object({
   essay: z.object({
     title: z.string(),
-    introduction: z.string(),
     sections: z.array(z.object({
       title: z.string(),
+      description: z.string(),
     })),
-    conclusion: z.string(),
   }),
 });
 
@@ -58,5 +57,17 @@ export default defineEventHandler(async (event) => {
   const { schema, message } = getSchemaAndMessage(documentType, topic);
   const response = await processStructuredData(message, { schema });
 
-  return response;
+  // Transform the response to match the new structure
+  const transformedResponse = {
+    essay: {
+      title: response.essay.title,
+      sections: response.essay.sections.map(section => ({
+        title: section.title,
+        description: section.description,
+        content: '',
+      })),
+    },
+  };
+
+  return transformedResponse;
 });
