@@ -4,14 +4,14 @@
     <p class="text-xl mb-8">Enter a topic and let's get started!</p>
     <div class="w-full max-w-md">
       <Input 
-        v-model="topic" 
+        v-model="localTopic" 
         placeholder="Enter your topic here" 
         class="w-full mb-4"
       />
       <Button 
-        @click="generateSection" 
+        @click="generateOutline" 
         class="w-full"
-        :disabled="!topic"
+        :disabled="!localTopic"
       >
         Start
       </Button>
@@ -20,9 +20,11 @@
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { useEssayStore } from '@/stores/essayStore';
 import { storeToRefs } from 'pinia';
+
+import { useEssayStore } from '@/stores/essayStore';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 
@@ -30,13 +32,21 @@ const router = useRouter();
 const essayStore = useEssayStore();
 const { topic } = storeToRefs(essayStore);
 
-const generateSection = async () => {
-  if (topic.value) {
+const localTopic = ref(topic.value);
+
+const generateOutline = async () => {
+  if (localTopic.value) {
     try {
+      // Clear any existing essay data
+      essayStore.clearEssay();
+
       essayStore.setDocumentType('essay'); // Set default document type to 'essay'
-      router.push(`/essay/v1/section`);
+      essayStore.setTopic(localTopic.value);
+      
+      // Navigate to the section page
+      router.push('/essay/section');
     } catch (error) {
-      console.error('Error generating outline:', error);
+      console.error('Error setting up essay:', error);
     }
   }
 };

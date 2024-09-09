@@ -1,14 +1,17 @@
 import { defineEventHandler, readBody } from 'h3'
 import { processStructuredData } from '../openaiService'
-import { essaySectionMessage } from '~/constants/prompt'
+import { essaySectionMessage } from '@/constants/prompt'
 import { z } from 'zod';
 
-const essaySchema = z.object({
-  essay: z.object({
-    section: z.object({
-      title: z.string(),
-    }),
-  }),
+import type { Section, EssaySectionResponse } from '@/types/essay';
+
+const sectionSchema: z.ZodType<Section> = z.object({
+  title: z.string(),
+  description: z.string(),
+});
+
+const essaySchema: z.ZodType<EssaySectionResponse> = z.object({
+  sections: sectionSchema,
 });
 
 export default defineEventHandler(async (event) => {
@@ -26,7 +29,7 @@ export default defineEventHandler(async (event) => {
     const messages = essaySectionMessage(topic, documentType, sectionIndex, currentSections)
 
     const response = await processStructuredData(messages, {
-      stream: false, // We want a complete response, not a stream
+      stream: false,
       schema: essaySchema,
     })
 
