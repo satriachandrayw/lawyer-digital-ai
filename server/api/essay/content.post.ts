@@ -6,6 +6,8 @@ import type { Section } from '@/types/essay';
 import { processStructureDataStreaming } from "@/server/api/openaiService";
 import { essayContentMessage } from "@/constants/prompt";
 
+import type { CoreMessage } from "ai";
+
 const sectionSchema: z.ZodType<Section> = z.object({
   title: z.string(),
   description: z.string(),
@@ -26,8 +28,8 @@ export default defineEventHandler(async event => {
       message: "Invalid section or topic data",
     });
   }
-  const messages = essayContentMessage(topic, index, prompt.title);
-
+  const messages = essayContentMessage(topic, index, prompt.title) as CoreMessage[];
+  
   const options = {
     schema: sectionSchema,
   };

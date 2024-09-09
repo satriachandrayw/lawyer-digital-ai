@@ -3,21 +3,23 @@ import { generateText, streamText, generateObject, streamObject, CoreMessage } f
 
 import { retryWithExponentialBackoff } from "@/utils/promise";
 
-// Initialize OpenRouter client
 const openrouter = createOpenRouter({
   apiKey: process.env.OPENROUTER_API_KEY || "",
   baseURL: "https://openrouter.ai/api/v1",
 });
 
+
+const generateDefaultOptions = () => ({
+  model: openrouter("openai/gpt-4o-mini"),
+  headers: {
+    "HTTP-Referer": "https://your-site.com",
+    "X-Title": "Asisten Hukum Indonesia",
+  },
+});
+
 export const processWithOpenAI = async (messages: CoreMessage[], options = {}) => {
-  const defaultOptions = {
-    model: openrouter("openai/gpt-4o-mini"),
-    stream: true,
-    headers: {
-      "HTTP-Referer": "https://your-site.com",
-      "X-Title": "Asisten Hukum Indonesia",
-    },
-  };
+  const defaultOptions = generateDefaultOptions();
+  defaultOptions.stream = true;
 
   messages.unshift({
     role: "system",
@@ -40,14 +42,8 @@ export const processWithOpenAIFull = async (messages: CoreMessage[], options = {
     throw new Error("Invalid input: text must be a non-empty string");
   }
 
-  const defaultOptions = {
-    model: "openai/gpt-4o-mini",
-    stream: false,
-    headers: {
-      "HTTP-Referer": "https://your-site.com",
-      "X-Title": "Asisten Hukum Indonesia",
-    },
-  };
+  const defaultOptions = generateDefaultOptions();
+  defaultOptions.stream = false;
 
   const finalOptions = {
     ...defaultOptions,
@@ -66,14 +62,10 @@ export const processWithOpenAIFull = async (messages: CoreMessage[], options = {
 };
 
 export const processWithOpenAIStream = async (messages: CoreMessage[], options = {}) => {
-  const defaultOptions = {
-    model: openrouter("google/gemini-pro-1.5"),
-    temperature: 0.8,
-    stream: true,
-    headers: {
-      "HTTP-Referer": "https://your-site.com",
-    },
-  };
+  const defaultOptions = generateDefaultOptions();
+  defaultOptions.model = openrouter("google/gemini-pro-1.5");
+  defaultOptions.temperature = 0.8;
+  defaultOptions.stream = true;
 
   const mergedOptions = { ...defaultOptions, ...options, messages };
 
@@ -88,14 +80,9 @@ export const processWithOpenAIStream = async (messages: CoreMessage[], options =
 };
 
 export const processStructuredData = async (messages: CoreMessage[], options = {}) => {
-  const defaultOptions = {
-    model: openrouter("openai/gpt-4o-mini"),
-    temperature: 0.8,
-    stream: false,
-    headers: {
-      "HTTP-Referer": "https://your-site.com",
-    },
-  };
+  const defaultOptions = generateDefaultOptions();
+  defaultOptions.temperature = 0.8;
+  defaultOptions.stream = false;
 
   const mergedOptions = { ...defaultOptions, ...options, messages };
 
@@ -111,14 +98,9 @@ export const processStructuredData = async (messages: CoreMessage[], options = {
 };
 
 export const processStructureDataStreaming = async (messages: CoreMessage[], options = {}) => {
-  const defaultOptions = {
-    model: openrouter("openai/gpt-4o-mini"),
-    temperature: 1.2,
-    stream: true,
-    headers: {
-      "HTTP-Referer": "https://your-site.com",
-    },
-  };
+  const defaultOptions = generateDefaultOptions();
+  defaultOptions.temperature = 1.2;
+  defaultOptions.stream = true;
 
   const mergedOptions = { ...defaultOptions, ...options, messages };
 

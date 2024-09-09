@@ -40,7 +40,7 @@ const generateOutline = async () => {
       // Clear any existing essay data
       essayStore.clearEssay();
 
-      essayStore.setDocumentType('essay'); // Set default document type to 'essay'
+      essayStore.setDocumentType('essay');
       essayStore.setTopic(localTopic.value);
       
       // Navigate to the section page
