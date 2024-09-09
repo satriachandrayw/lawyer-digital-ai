@@ -120,11 +120,11 @@ const generateContent = async (index: number) => {
 
 const goBack = () => {
   essayStore.clearContents();  
-  router.push('/essay/section');
+  router.push('/section');
 };
 
 const composeEssay = () => {
-  router.push('/essay/compose');
+  router.push('/compose');
 };
 
 const regenerateContent = async (index: number) => {

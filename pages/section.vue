@@ -151,12 +151,12 @@ const fetchOutline = async () => {
 const isAnyEditing = computed(() => essay.value.sections.some(section => section.editing));
 
 const goToEdit = () => {
-  router.push(`/essay/content`);
+  router.push(`/content`);
 };
 
 const goToIndex = () => {
   essayStore.clearEssay();
-  router.push('/essay');
+  router.push('/');
 };
 
 onMounted(() => {
