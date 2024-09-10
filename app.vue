@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen bg-background text-foreground flex flex-col">
     <main class="flex-grow flex items-center justify-center">
-      <div class="absolute top-8 right-8 z-50">
+      <!-- <div class="absolute top-4 right-4 z-50">
     <Button
       id="color-mode-toggle"
       @click="toggleColorMode"  
@@ -11,7 +11,7 @@
       <span v-if="colorMode.value === 'dark'">🌞</span>
       <span v-else>🌙</span>
       </Button>
-    </div>
+    </div> -->
       <NuxtPage />
     </main>
 </div>
