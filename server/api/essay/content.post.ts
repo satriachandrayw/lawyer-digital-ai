@@ -9,6 +9,7 @@ import { essayContentMessage } from "@/constants/prompt";
 import type { CoreMessage } from "ai";
 
 const sectionSchema: z.ZodType<Section> = z.object({
+  index: z.number(),
   title: z.string(),
   description: z.string(),
   content: z.string(),

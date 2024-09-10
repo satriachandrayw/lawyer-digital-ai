@@ -1,11 +1,11 @@
 <template>
   <div class="container mx-auto px-4 py-8">
     <div class="flex justify-between items-center mb-6">
-      <h1 class="text-4xl font-bold">{{ essay.title }}</h1>
+      <h1 class="text-4xl font-bold">{{ localEssay.title }}</h1>
       <Button @click="regenerateAll" variant="outline">Generate All</Button>
     </div>
     <div class="mb-8 space-y-4">
-      <div v-for="(section, index) in essay.sections" :key="index" class="rounded-lg shadow-md p-6">
+      <div v-for="(section, index) in localEssay.sections" :key="index" class="rounded-lg shadow-md p-6">
         <div class="flex items-start space-x-4">
           <div class="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg">
             {{ index + 1 }}
@@ -56,10 +56,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
 import { useCompletion } from '@ai-sdk/vue';
+import { parse } from 'partial-json';
 
 import { useEssayStore } from '@/stores/essayStore';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -72,6 +73,8 @@ const router = useRouter();
 const essayStore = useEssayStore();
 const { essay, topic } = storeToRefs(essayStore) as { essay: Ref<Essay>, topic: Ref<string> };
 
+const localEssay = ref<Essay>(essay.value);
+
 const { complete, completion, error } = useCompletion({
   api: '/api/essay/content',
   streamProtocol: 'text',
@@ -81,19 +84,32 @@ const { complete, completion, error } = useCompletion({
 });
 
 onMounted(() => {
-  essay.value.sections.forEach(section => {
+  localEssay.value.sections.forEach(section => {
     section.isProcessing = false;
   });
 });
 
-const generateContent = async (index: number) => {
-  if (essay.value.sections[index].isProcessing) return; 
+const updateLocalEssay = (parsedData: any) => {
+  if (parsedData?.index !== undefined && parsedData?.content) {
+    const index = parsedData.index - 1;
+    if (localEssay.value.sections[index]) {
+      localEssay.value.sections[index] = {
+        ...localEssay.value.sections[index],
+        content: parsedData.content,
+        isProcessing: false
+      };
+    }
+  }
+};
 
-  essay.value.sections[index].isProcessing = true;
-  essay.value.sections[index].content = ''; 
+const generateContent = async (index: number) => {
+  if (localEssay.value.sections[index].isProcessing) return; 
+
+  localEssay.value.sections[index].isProcessing = true;
+  localEssay.value.sections[index].content = ''; 
 
   try {
-    await complete(essay.value.sections[index].title, {
+    await complete(localEssay.value.sections[index].title, {
       body: { topic: topic.value, index }
     });
 
@@ -101,20 +117,11 @@ const generateContent = async (index: number) => {
       throw new Error(error.value.message);
     }
 
-    try {
-      const {content} = JSON.parse(completion.value);
-      essay.value.sections[index].content = content;
-      essayStore.updateSection(index, { content: essay.value.sections[index].content });
-    } catch (parseError) {
-      console.error('Error parsing completion:', parseError);
-      essay.value.sections[index].content = completion.value;
-      essayStore.updateSection(index, { content: essay.value.sections[index].content });
-    }
+    // The content will be updated by the watcher
   } catch (error) {
     console.error(`Error generating content for section ${index + 1}:`, error);
-    essay.value.sections[index].content = 'Error generating content';
-  } finally {
-    essay.value.sections[index].isProcessing = false;
+    localEssay.value.sections[index].content = 'Error generating content';
+    localEssay.value.sections[index].isProcessing = false;
   }
 };
 
@@ -124,6 +131,7 @@ const goBack = () => {
 };
 
 const composeEssay = () => {
+  essayStore.setEssay(localEssay.value);
   router.push('/compose');
 };
 
@@ -133,11 +141,23 @@ const regenerateContent = async (index: number) => {
 };
 
 const regenerateAll = async () => {
-  await Promise.all(essay.value.sections.map((_, index) => generateContent(index)));
+  await Promise.all(localEssay.value.sections.map((_, index) => generateContent(index)));
 };
 
 const allContentsGenerated = computed(() => 
-  essay.value.sections.length > 0 && 
-  essay.value.sections.every(section => section.content && section.content.trim() !== '')
+  localEssay.value.sections.length > 0 && 
+  localEssay.value.sections.every(section => section.content && section.content.trim() !== '')
 );
+
+// Update this watcher to handle streaming updates
+watch(completion, (newCompletion) => {
+  if (newCompletion) {
+    try {
+      const parsedData = parse(newCompletion);
+      updateLocalEssay(parsedData);
+    } catch (e) {
+      console.error('Error parsing streaming data:', e);
+    }
+  }
+});
 </script>

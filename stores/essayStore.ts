@@ -38,6 +38,9 @@ export const useEssayStore = defineStore('essay', {
       this.essay.sections.forEach(section => {
         section.content = '';
       });
+    },
+    setEssay(essay: Essay) {
+      this.essay = essay;
     }
   }
 })
