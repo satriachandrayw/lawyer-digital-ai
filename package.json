@@ -27,6 +27,7 @@
     "lucide-vue-next": "^0.435.0",
     "nuxt": "^3.13.0",
     "openai": "^4.56.0",
+    "partial-json": "^0.1.7",
     "pdfjs-dist": "^3.11.174",
     "pinia": "^2.2.2",
     "quill": "^2.0.2",

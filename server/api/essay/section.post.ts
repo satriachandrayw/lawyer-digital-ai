@@ -1,11 +1,12 @@
 import { defineEventHandler, readBody } from 'h3'
-import { processStructuredData } from '../openaiService'
+import { processStructureDataStreaming } from '../openaiService'
 import { essaySectionMessage } from '@/constants/prompt'
 import { z } from 'zod';
 
 import type { Section, EssaySectionResponse } from '@/types/essay';
 
 const sectionSchema: z.ZodType<Section> = z.object({
+  index: z.number(),
   title: z.string(),
   description: z.string(),
 });
@@ -16,28 +17,28 @@ const essaySchema: z.ZodType<EssaySectionResponse> = z.object({
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
-  const { topic, documentType, sectionIndex, currentSections } = body
+  const { prompt, documentType, sectionIndex, currentSections } = body
 
-  if (!topic || !documentType || sectionIndex === undefined || !currentSections) {
-    return createError({
+  if (!prompt || !documentType || sectionIndex === undefined || !currentSections) {
+    throw createError({
       statusCode: 400,
       statusMessage: 'Missing required parameters',
     })
   }
 
   try {
-    const messages = essaySectionMessage(topic, documentType, sectionIndex, currentSections)
+    const messages = essaySectionMessage(prompt, documentType, sectionIndex, currentSections)
 
-    const response = await processStructuredData(messages, {
-      stream: false,
+    const response = await processStructureDataStreaming(messages, {
+      stream: true,
       schema: essaySchema,
     })
 
-    return response
+    return response.toTextStreamResponse()
 
   } catch (error) {
     console.error('Error regenerating section:', error)
-    return createError({
+    throw createError({
       statusCode: 500,
       statusMessage: 'An error occurred while regenerating the section',
     })

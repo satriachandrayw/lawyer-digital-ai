@@ -1,5 +1,5 @@
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
-import { generateText, streamText, generateObject, streamObject, CoreMessage } from "ai";
+import { generateText, streamText, generateObject, streamObject, CoreMessage, StreamData } from "ai";
 
 import { retryWithExponentialBackoff } from "@/utils/promise";
 
@@ -105,8 +105,15 @@ export const processStructureDataStreaming = async (messages: CoreMessage[], opt
   const mergedOptions = { ...defaultOptions, ...options, messages };
 
   try {
-    const stream = await streamObject(mergedOptions);
-    return stream;
+    const data = new StreamData();
+
+    mergedOptions.onFinish = () => {
+      data.close()
+    }
+
+    const response = await streamObject(mergedOptions);
+    
+    return response;
   } catch (error) {
     console.error("Error processing final response:", error);
     throw error;

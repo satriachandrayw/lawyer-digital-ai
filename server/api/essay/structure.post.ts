@@ -1,5 +1,5 @@
 import { defineEventHandler, readBody } from 'h3';
-import { processStructuredData } from '../openaiService';
+import { processStructureDataStreaming } from '../openaiService';
 import { z } from 'zod';
 
 const essaySchema = z.object({
@@ -45,29 +45,17 @@ const getSchemaAndMessage = (documentType: string, text: string) => {
 };
 
 export default defineEventHandler(async (event) => {
-  const { topic, documentType } = await readBody(event);
+  const { prompt, documentType } = await readBody(event);
 
-  if (!topic || !documentType) {
+  if (!prompt || !documentType) {
     throw createError({
       statusCode: 400,
-      statusMessage: 'Topic is required',
+      statusMessage: 'Topic and document type are required',
     });
   }
+  
+  const { schema, message } = getSchemaAndMessage(documentType, prompt);
+  const stream = await processStructureDataStreaming(message, { schema });
 
-  const { schema, message } = getSchemaAndMessage(documentType, topic);
-  const response = await processStructuredData(message, { schema });
-
-  // Transform the response to match the new structure
-  const transformedResponse = {
-    essay: {
-      title: response.essay.title,
-      sections: response.essay.sections.map(section => ({
-        title: section.title,
-        description: section.description,
-        content: '',
-      })),
-    },
-  };
-
-  return transformedResponse;
+  return stream.toTextStreamResponse();
 });
