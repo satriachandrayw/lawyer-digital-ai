@@ -21,4 +21,6 @@ export interface EssayState {
   essay: Essay;
   documentType: string;
   topic: string;
+  language: string;
+  characteristic: string;
 }

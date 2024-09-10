@@ -8,10 +8,36 @@
         placeholder="Enter your topic here" 
         class="w-full mb-4"
       />
+      <div class="flex space-x-4 mb-6">
+        <Select v-model="selectedLanguage" class="flex-none w-16">
+          <SelectTrigger>
+            <SelectValue placeholder="Select a language" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectGroup>
+              <SelectItem v-for="language in languages" :key="language.value" :value="language.value">
+                {{ language.label }}
+              </SelectItem>
+            </SelectGroup>
+          </SelectContent>
+        </Select>
+        <Select v-model="selectedCharacteristic" class="flex-none w-18">
+          <SelectTrigger>
+            <SelectValue placeholder="Select a characteristic" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectGroup>
+              <SelectItem v-for="characteristic in characteristics" :key="characteristic.value" :value="characteristic.value">
+                {{ characteristic.label }}
+              </SelectItem>
+            </SelectGroup>
+          </SelectContent>
+        </Select>
+      </div>
       <Button 
         @click="generateOutline" 
         class="w-full"
-        :disabled="!localTopic"
+        :disabled="!localTopic || !selectedLanguage || !selectedCharacteristic"
       >
         Start
       </Button>
@@ -27,21 +53,38 @@ import { storeToRefs } from 'pinia';
 import { useEssayStore } from '@/stores/essayStore';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Select, SelectTrigger, SelectContent, SelectGroup, SelectItem, SelectValue } from '@/components/ui/select';
 
 const router = useRouter();
 const essayStore = useEssayStore();
 const { topic } = storeToRefs(essayStore);
 
 const localTopic = ref(topic.value);
+const selectedLanguage = ref('');
+const selectedCharacteristic = ref('');
+
+const languages = [
+  { value: 'en', label: 'English' },
+  { value: 'id', label: 'Indonesia' },
+];
+const characteristics = [
+  { value: 'creative', label: 'Creative' },
+  { value: 'analytical', label: 'Analytical' },
+  { value: 'persuasive', label: 'Persuasive' },
+  { value: 'informative', label: 'Informative' },
+  { value: 'descriptive', label: 'Descriptive' },
+];
 
 const generateOutline = async () => {
-  if (localTopic.value) {
+  if (localTopic.value && selectedLanguage.value && selectedCharacteristic.value) {
     try {
       // Clear any existing essay data
       essayStore.clearEssay();
 
       essayStore.setDocumentType('essay');
       essayStore.setTopic(localTopic.value);
+      essayStore.setLanguage(selectedLanguage.value);
+      essayStore.setCharacteristic(selectedCharacteristic.value);
       
       // Navigate to the section page
       router.push('/section');

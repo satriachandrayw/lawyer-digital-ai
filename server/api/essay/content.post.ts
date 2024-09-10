@@ -21,7 +21,7 @@ const sectionSchema: z.ZodType<Section> = z.object({
 
 export default defineEventHandler(async event => {
   const body = await readBody(event);
-  const { prompt, topic, index } = body;
+  const { prompt, topic, language, characteristic, index } = body;
 
   if (!prompt || typeof prompt !== "string" || !topic || typeof topic !== "string") {
     throw createError({
@@ -29,7 +29,7 @@ export default defineEventHandler(async event => {
       message: "Invalid section or topic data",
     });
   }
-  const messages = essayContentMessage(topic, index, prompt.title) as CoreMessage[];
+  const messages = essayContentMessage(topic, language, characteristic, index, prompt.title) as CoreMessage[];
   
   const options = {
     schema: sectionSchema,

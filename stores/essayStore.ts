@@ -10,6 +10,8 @@ export const useEssayStore = defineStore('essay', {
     } as Essay,
     documentType: 'essay',
     topic: '',
+    language: '',
+    characteristic: '',
   }),
   actions: {
     setTitle(title: string) {
@@ -20,6 +22,12 @@ export const useEssayStore = defineStore('essay', {
     },
     setTopic(topic: string) {
       this.topic = topic;
+    },
+    setLanguage(language: string) {
+      this.language = language;
+    },
+    setCharacteristic(characteristic: string) {
+      this.characteristic = characteristic;
     },
     setSections(sections: Section[]) {
       this.essay.sections = sections;

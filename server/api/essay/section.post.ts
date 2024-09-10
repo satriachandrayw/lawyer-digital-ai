@@ -17,7 +17,7 @@ const essaySchema: z.ZodType<EssaySectionResponse> = z.object({
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
-  const { prompt, documentType, sectionIndex, currentSections } = body
+  const { prompt, documentType, language, characteristic, sectionIndex, currentSections } = body
 
   if (!prompt || !documentType || sectionIndex === undefined || !currentSections) {
     throw createError({
@@ -27,7 +27,7 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
-    const messages = essaySectionMessage(prompt, documentType, sectionIndex, currentSections)
+    const messages = essaySectionMessage(prompt, documentType, language, characteristic, sectionIndex, currentSections)
 
     const response = await processStructureDataStreaming(messages, {
       stream: true,

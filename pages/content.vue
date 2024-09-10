@@ -71,7 +71,7 @@ import type { Essay } from '@/types/essay';
 
 const router = useRouter();
 const essayStore = useEssayStore();
-const { essay, topic } = storeToRefs(essayStore) as { essay: Ref<Essay>, topic: Ref<string> };
+const { essay, topic, language, characteristic } = storeToRefs(essayStore) as { essay: Ref<Essay>, topic: Ref<string>, language: Ref<string>, characteristic: Ref<string> };
 
 const localEssay = ref<Essay>(essay.value);
 
@@ -110,7 +110,11 @@ const generateContent = async (index: number) => {
 
   try {
     await complete(localEssay.value.sections[index].title, {
-      body: { topic: topic.value, index }
+      body: { 
+        topic: topic.value, 
+        language: language.value, 
+        characteristic: characteristic.value, 
+        index }
     });
 
     if (error.value) {

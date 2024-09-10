@@ -1,6 +1,7 @@
 import { defineEventHandler, readBody } from 'h3';
 import { processStructureDataStreaming } from '../openaiService';
 import { z } from 'zod';
+import { essayStructureMessage } from '@/constants/prompt';
 
 const essaySchema = z.object({
   essay: z.object({
@@ -21,16 +22,13 @@ const journalSchema = z.object({
   }),
 });
 
-const getSchemaAndMessage = (documentType: string, text: string) => {
+const getSchemaAndMessage = (documentType: string, language: string, characteristic: string, text: string) => {
   let schema;
   let message;
 
   if (documentType === 'essay') {
     schema = essaySchema;
-    message = [
-      { role: 'system', content: 'You are an expert essay writer assistant In Bahasa Indonesia.' },
-      { role: 'user', content: `Generate a main idea for an essay based on the topic: "${text}"` }
-    ];
+    message = essayStructureMessage(text, language, characteristic);
   } else if (documentType === 'journal') {
     schema = journalSchema;
     message = [
@@ -45,7 +43,7 @@ const getSchemaAndMessage = (documentType: string, text: string) => {
 };
 
 export default defineEventHandler(async (event) => {
-  const { prompt, documentType } = await readBody(event);
+  const { prompt, documentType, language, characteristic} = await readBody(event);
 
   if (!prompt || !documentType) {
     throw createError({
@@ -54,7 +52,7 @@ export default defineEventHandler(async (event) => {
     });
   }
   
-  const { schema, message } = getSchemaAndMessage(documentType, prompt);
+  const { schema, message } = getSchemaAndMessage(documentType, language, characteristic, prompt);
   const stream = await processStructureDataStreaming(message, { schema });
 
   return stream.toTextStreamResponse();

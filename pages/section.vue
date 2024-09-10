@@ -83,7 +83,7 @@ import type { Essay, Section } from '@/types/essay';
 const router = useRouter();
 const essayStore = useEssayStore();
 
-const { essay, topic, documentType } = storeToRefs(essayStore) as { essay: Ref<Essay>, topic: Ref<string>, documentType: Ref<string> };
+const { essay, topic, documentType, language, characteristic } = storeToRefs(essayStore) as { essay: Ref<Essay>, topic: Ref<string>, documentType: Ref<string>, language: Ref<string>, characteristic: Ref<string> };
 
 const localEssay = ref<Essay>(essayStore.essay);
 const localTopic = ref(essayStore.topic);
@@ -162,7 +162,11 @@ const fetchSection = async () => {
   isLoading.value = true;
   try {
     await completeStructure(localTopic.value, {
-      body: { documentType: localDocumentType.value }
+      body: { 
+        documentType: localDocumentType.value, 
+        language: language.value, 
+        characteristic: characteristic.value 
+      }
     });
 
     if (errorStructure.value) {
@@ -181,7 +185,9 @@ const regenerateSection = async (index: number) => {
   try {
     await completeSection(localTopic.value, {
       body: { 
-        documentType: localDocumentType.value, 
+        documentType: localDocumentType.value,
+        language: language.value, 
+        characteristic: characteristic.value, 
         sectionIndex: index, 
         currentSections: localEssay.value.sections.map(s => s.title) 
       }

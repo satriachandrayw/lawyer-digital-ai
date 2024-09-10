@@ -1,3 +1,15 @@
+const characteristicTone = (characteristic: string) => {
+  return {
+    'creative': 'imaginative and engaging storytelling',
+    'analytical': 'detailed analysis and logical reasoning',
+    'persuasive': 'convincing arguments and persuasive language',
+    'informative': 'clear explanations and concise information',
+    'descriptive': 'vivid descriptions and sensory details'
+  }[characteristic];
+}
+
+const languageTone = (language: string) => language === 'id' ? 'Bahasa Indonesia' : 'English';
+
 export const responGugatanMessage = (context: string) => [
   { 
     role: 'system', 
@@ -53,16 +65,23 @@ export const responGugatanMessage = (context: string) => [
   },
 ];
 
-export const essayContentMessage = (topic: string, index: number, section: string) => {
+export const essayContentMessage = (topic: string, language: string, characteristic: string, index: number, section: string) => {
 
-  const prompt = `Buatlah paragraf untuk section ${index + 1}: ${section} 
-  berdasarkan topic berikut: "${topic}".
-  tulis dengan detail dan terstruktur.`
+  // const prompt = `Buatlah paragraf untuk section ${index + 1}: ${section} 
+  // berdasarkan topic berikut: "${topic}".
+  // tulis dengan detail dan terstruktur.`
 
+  const prompt = `
+  Write a detailed and structured paragraph for section ${index + 1}: "${section}" 
+  based on the topic: "${topic}".
+  Ensure the essay is written with a ${characteristic} tone, 
+  focusing on ${characteristicTone(characteristic)}. 
+  Write the response in ${languageTone(language)}.
+`;
   return [
   {
     role: 'system',
-    content: `anda adalah profesor membuat essay berbahasa indonesia yang ahli`
+    content: `You are an expert essay writer helpful assistant`
   },
   {
     role: 'user',
@@ -71,19 +90,36 @@ export const essayContentMessage = (topic: string, index: number, section: strin
 ]
 }
 
-export const essaySectionMessage = (topic: string, documentType: string, sectionIndex: number, currentSections: string[]) => {
+export const essaySectionMessage = (topic: string, documentType: string, language: string, characteristic: string, sectionIndex: number, currentSections: string[]) => {
   const prompt = `
     Given an essay on the topic "${topic}" of type "${documentType}", 
     with the following current section titles:
     ${currentSections.map((title, index) => `${index + 1}. ${title}`).join('\n')}
 
     Please regenerate the section at index ${sectionIndex + 1} (currently "${currentSections[sectionIndex]}").
-    Provide a new title and brief content for this section that fits well with the other sections and maintains the overall flow of the essay.
-    write down the description just 1 sentence. write the anwser in bahasa indonesia
+    Provide a new title and brief content for this section that fits well with the other sections and maintains the overall flow and coherence of the essay.
+    Ensure the essay is written with a ${characteristic} tone, 
+    focusing on ${characteristicTone(characteristic)}.
+    write down the description just 1 sentence max 100 character. write the answer in ${languageTone(language)}.
   `
 
   return [
     { role: 'system', content: 'You are an expert essay writer assistant in Indonesia.' },
+    { role: 'user', content: prompt }
+  ]
+}
+
+export const essayStructureMessage = (topic: string, language: string, characteristic: string) => {
+  const prompt = `
+    Generate a structured outline for an essay based on the topic: "${topic}". 
+    Include main ideas and subpoints that logically flow together.
+    Ensure the essay is written with a ${characteristic} tone, 
+    focusing on ${characteristicTone(characteristic)}.
+    write down the description just 1 sentence max 100 character. 
+    Write the response in ${languageTone(language)}.
+  `;
+  return [
+    { role: 'system', content: 'You are an expert essay writer helpful assistant' },
     { role: 'user', content: prompt }
   ]
 }
