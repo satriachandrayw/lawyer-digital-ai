@@ -39,6 +39,8 @@
     "tesseract.js": "^5.1.1",
     "vue": "latest",
     "vue-markdown-render": "^2.2.1",
+    "vue-typical": "^2.1.0",
+    "vue3-typer": "^1.0.0",
     "zod": "^3.23.8"
   },
   "devDependencies": {

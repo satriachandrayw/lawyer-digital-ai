@@ -6,9 +6,9 @@ import { z } from 'zod';
 import type { Section, EssaySectionResponse } from '@/types/essay';
 
 const sectionSchema: z.ZodType<Section> = z.object({
-  index: z.number(),
-  title: z.string(),
-  description: z.string(),
+  index: z.number().describe('Section index'),
+  title: z.string().describe('Section title'),
+  description: z.string().describe('Section description'),
 });
 
 const essaySchema: z.ZodType<EssaySectionResponse> = z.object({

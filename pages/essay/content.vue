@@ -131,12 +131,12 @@ const generateContent = async (index: number) => {
 
 const goBack = () => {
   essayStore.clearContents();  
-  router.push('/section');
+  router.push('/essay/section');
 };
 
 const composeEssay = () => {
   essayStore.setEssay(localEssay.value);
-  router.push('/compose');
+  router.push('/essay/compose');
 };
 
 const regenerateContent = async (index: number) => {

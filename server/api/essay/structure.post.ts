@@ -5,10 +5,10 @@ import { essayStructureMessage } from '@/constants/prompt';
 
 const essaySchema = z.object({
   essay: z.object({
-    title: z.string(),
+    title: z.string().describe('Essay title'),
     sections: z.array(z.object({
-      title: z.string(),
-      description: z.string(),
+      title: z.string().describe('Section title'),
+      description: z.string().describe('Section description'),
     })),
   }),
 });

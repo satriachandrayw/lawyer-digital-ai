@@ -219,12 +219,12 @@ const goToEdit = () => {
   topic.value = localTopic.value;
   documentType.value = localDocumentType.value;
 
-  router.push(`/content`);
+  router.push(`/essay/content`);
 };
 
 const goToIndex = () => {
   essayStore.clearEssay();
-  router.push('/');
+  router.push('/essay');
 };
 
 // Update this watcher to handle streaming updates

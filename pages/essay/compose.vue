@@ -72,7 +72,7 @@ const exportEssay = async () => {
 };
 
 const goBack = () => {
-  router.push("/content");
+  router.push("/essay/content");
 };
 
 onMounted(async () => {
