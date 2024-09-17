@@ -1,3 +1,5 @@
+import type { CoreMessage } from "ai";
+
 const characteristicTone = (characteristic: string) => {
   return {
     'creative': 'imaginative and engaging storytelling',
@@ -123,3 +125,25 @@ export const essayStructureMessage = (topic: string, language: string, character
     { role: 'user', content: prompt }
   ]
 }
+
+export const articleTitleMessage = (topic: string, language: string, newsType: string): CoreMessage[] => [
+  {
+    role: "system",
+    content: `You are an AI assistant specialized in generating news article titles. Create a compelling and informative title for a ${newsType} article about ${topic}. The title should be in ${language}.`,
+  },
+  {
+    role: "user",
+    content: `Generate a title for a ${newsType} article about ${topic} in ${language}.`,
+  },
+];
+
+export const articleContentMessage = (topic: string, language: string, newsType: string): CoreMessage[] => [
+  {
+    role: "system",
+    content: `You are an AI assistant specialized in writing news articles. Create a well-structured ${newsType} article about ${topic}. The article should be informative, engaging, and written in ${language}. Include relevant details, quotes if applicable, and maintain a journalistic style appropriate for the news type.`,
+  },
+  {
+    role: "user",
+    content: `Write a ${newsType} article about ${topic} in ${language}. Provide a comprehensive and well-structured content.`,
+  },
+];
