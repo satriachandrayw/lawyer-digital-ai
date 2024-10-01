@@ -49,6 +49,7 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
+import { useCompletion } from '@ai-sdk/vue';
 
 import { useNewsStore } from '@/stores/newsStore';
 import { Input } from '@/components/ui/input';
@@ -62,6 +63,20 @@ const { topic } = storeToRefs(newsStore);
 const localTopic = ref(topic.value);
 const selectedLanguage = ref('');
 const selectedNewsType = ref('');
+const localBrowseResult = ref('');
+
+const { complete, completion, error } = useCompletion({
+  api: '/api/article/browse',
+  streamProtocol: 'text',
+  onResponse: (response: Response) => {
+    console.log(`Received response onResponse`);
+  },
+  onFinish: (response: Response) => {
+    console.log(`Received response onFinish`);
+    updateLocalArticle(response);
+    router.push('/article/content');
+  }
+});
 
 const languages = [
   { value: 'en', label: 'English' },
@@ -85,11 +100,41 @@ const generateNewsArticle = async () => {
       newsStore.setLanguage(selectedLanguage.value);
       newsStore.setNewsType(selectedNewsType.value);
       
+      // Browse the internet for additional context
+      await complete(localTopic.value, {
+        body: { 
+          topic: localTopic.value,
+          language: selectedLanguage.value,
+          newsType: selectedNewsType.value,
+        }
+      });
+
+      // Store the browse result in the news store
+      // if (browseResult.value) {
+      //   newsStore.setBrowseResult(browseResult.value);
+      // }
+      
       // Navigate to the news generation page
-      router.push('/article/content');
+      // router.push('/article/content');
     } catch (error) {
       console.error('Error setting up news article:', error);
     }
   }
 };
+
+const updateLocalArticle = (newCompletion: string) => {
+  newsStore.setBrowseResult(newCompletion);
+}
+
+watch(completion, (newCompletion) => {
+  if (newCompletion) {
+    try {
+      // const parsedData = parse(newCompletion);
+      localBrowseResult.value = newCompletion;
+      // console.log(newCompletion);
+    } catch (e) {
+      console.error('Error parsing streaming data:', e);
+    }
+  }
+});
 </script>

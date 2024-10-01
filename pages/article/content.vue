@@ -86,7 +86,7 @@ import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuIte
 
 const router = useRouter();
 const newsStore = useNewsStore();
-const { news, topic, language, newsType } = storeToRefs(newsStore);
+const { news, topic, language, newsType, browseResult } = storeToRefs(newsStore);
 
 const localArticle = ref({
   title: news.value.title,
@@ -133,7 +133,8 @@ const generateTitle = async () => {
         topic: topic.value,
         language: language.value,
         newsType: newsType.value,
-        generateType: 'title'
+        generateType: 'title',
+        browseResult: browseResult.value, // Add this line
       }
     });
 
@@ -161,7 +162,8 @@ const generateContent = async () => {
         topic: topic.value,
         language: language.value,
         newsType: newsType.value,
-        generateType: 'content'
+        generateType: 'content',
+        browseResult: browseResult.value, // Add this line
       }
     });
 

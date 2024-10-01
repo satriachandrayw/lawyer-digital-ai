@@ -13,7 +13,7 @@ const articleSchema = z.object({
 
 export default defineEventHandler(async event => {
   const body = await readBody(event);
-  const { topic, language, newsType, generateType } = body;
+  const { topic, language, newsType, generateType, browseResult } = body;
 
   // if (!topic || typeof topic !== "string") {
   //   throw createError({
@@ -29,10 +29,10 @@ export default defineEventHandler(async event => {
     messages = articleTitleMessage(topic, language, newsType) as CoreMessage[];
     schema = z.object({ title: z.string() });
   } else if (generateType === 'content') {
-    messages = articleContentMessage(topic, language, newsType) as CoreMessage[];
+    messages = articleContentMessage(topic, language, newsType, browseResult) as CoreMessage[];
     schema = z.object({ content: z.string() });
   } else if (generateType === 'structure') {
-    messages = articleStructureMessage(topic, language, newsType) as CoreMessage[];
+    messages = articleStructureMessage(topic, language, newsType, browseResult) as CoreMessage[];
     schema = articleSchema;
   } else {
     throw createError({

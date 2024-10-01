@@ -12,6 +12,7 @@ export const useNewsStore = defineStore('news', {
     topic: '',
     language: '',
     newsType: '',
+    browseResult: '',
   }),
   actions: {
     setTitle(title: string) {
@@ -29,6 +30,9 @@ export const useNewsStore = defineStore('news', {
     setNewsType(newsType: string) {
       this.newsType = newsType;
     },
+    setBrowseResult(result: string) {
+      this.browseResult = result;
+    },
     setSections(sections: Section[]) {
       this.news.sections = sections;
     },
@@ -37,6 +41,10 @@ export const useNewsStore = defineStore('news', {
         title: '',
         sections: [] as Section[]
       } as News;
+      this.topic = '';
+      this.language = '';
+      this.newsType = '';
+      this.browseResult = '';
     },
   },
 });

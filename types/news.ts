@@ -19,4 +19,5 @@ export interface NewsState {
   topic: string;
   language: string;
   newsType: string;
+  browseResult?: string;
 }
