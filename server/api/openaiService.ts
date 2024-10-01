@@ -17,6 +17,14 @@ const generateDefaultOptions = () => ({
   },
 });
 
+const generateDefaultOptionsOnline = () => ({
+  model: openrouter("perplexity/llama-3.1-sonar-small-128k-online"),
+  headers: {
+    "HTTP-Referer": "https://your-site.com",
+    "X-Title": "Asisten Hukum Indonesia",
+  },
+});
+
 export const processWithOpenAI = async (messages: CoreMessage[], options = {}) => {
   const defaultOptions = generateDefaultOptions();
   defaultOptions.stream = true;

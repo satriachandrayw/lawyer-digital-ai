@@ -2,13 +2,13 @@ import { defineEventHandler, readBody } from "h3";
 import { z } from "zod";
 
 import { processStructureDataStreaming } from "@/server/api/openaiService";
-import { articleTitleMessage, articleContentMessage } from "@/constants/prompt";
+import { articleTitleMessage, articleContentMessage, articleStructureMessage } from "@/constants/prompt";
 
 import type { CoreMessage } from "ai";
 
 const articleSchema = z.object({
   title: z.string(),
-  content: z.string(),
+  content: z.string()
 });
 
 export default defineEventHandler(async event => {
@@ -30,6 +30,9 @@ export default defineEventHandler(async event => {
     schema = z.object({ title: z.string() });
   } else if (generateType === 'content') {
     messages = articleContentMessage(topic, language, newsType) as CoreMessage[];
+    schema = z.object({ content: z.string() });
+  } else if (generateType === 'structure') {
+    messages = articleStructureMessage(topic, language, newsType) as CoreMessage[];
     schema = articleSchema;
   } else {
     throw createError({

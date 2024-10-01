@@ -144,6 +144,17 @@ export const articleContentMessage = (topic: string, language: string, newsType:
   },
   {
     role: "user",
-    content: `Write a ${newsType} article about ${topic} in ${language}. Provide a comprehensive and well-structured content.`,
+    content: `Write a ${newsType} article content about ${topic} in ${language}. Provide a comprehensive and well-structured content.`,
   },
+];
+
+export const articleStructureMessage = (topic: string, language: string, newsType: string): CoreMessage[] => [
+  {
+    role: "system",
+    content: `You are an AI assistant specialized in generating news article structures. Create a structured outline for a ${newsType} article about ${topic}. The outline should be informative, engaging, and written in ${language}. Include relevant details, quotes if applicable, and maintain a journalistic style appropriate for the news type.`,
+  },
+  {
+    role: "user",
+    content: `Write a ${newsType} article content and its title about ${topic} in ${language}. Provide a comprehensive and well-structured content.`,
+  }
 ];

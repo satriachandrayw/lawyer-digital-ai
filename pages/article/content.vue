@@ -1,7 +1,7 @@
 <template>
   <div class="container mx-auto px-4 py-8">
     <div class="flex justify-between items-center mb-6">
-      <h1 class="text-4xl font-bold">{{ localArticle.title }}</h1>
+      <h1 class="text-4xl font-bold">Drafting Article</h1>
       <Button @click="generateArticle" variant="outline">Generate Article</Button>
     </div>
     <div class="mb-8 space-y-4">
@@ -27,9 +27,9 @@
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
-              <DropdownMenuItem @click="regenerateArticle">
+              <DropdownMenuItem @click="regenerateTitle">
                 <Icon icon="radix-icons:update" class="mr-2 h-4 w-4" />
-                <span>Regenerate</span>
+                <span>Regenerate Title</span>
               </DropdownMenuItem>
               <DropdownMenuItem @click="editArticle">
                 <Icon icon="radix-icons:pencil" class="mr-2 h-4 w-4" />
@@ -56,6 +56,12 @@
           <div v-else class="whitespace-pre-wrap">
             {{ localArticle.content }}
           </div>
+        </div>
+        <div class="mt-4 flex justify-end space-x-2" v-if="localArticle.content">
+          <Button @click="regenerateContent" variant="outline" size="sm">
+            <Icon icon="radix-icons:update" class="w-4 h-4 mr-2" />
+            Regenerate Content
+          </Button>
         </div>
       </div>
     </div>
@@ -143,7 +149,7 @@ const generateTitle = async () => {
   }
 };
 
-const generateArticle = async () => {
+const generateContent = async () => {
   if (localArticle.value.isContentProcessing) return; 
 
   localArticle.value.isContentProcessing = true;
@@ -171,14 +177,50 @@ const generateArticle = async () => {
   }
 };
 
+const generateArticle = async () => {
+  if (localArticle.value.isContentProcessing) return; 
+
+  localArticle.value.isContentProcessing = true;
+  localArticle.value.isTitleProcessing = true;
+  localArticle.value.title = '';
+  localArticle.value.content = ''; 
+
+  try {
+    await complete(localArticle.value.title, {
+      body: { 
+        topic: topic.value,
+        language: language.value,
+        newsType: newsType.value,
+        generateType: 'structure'
+      }
+    });
+
+    if (error.value) {
+      throw new Error(error.value.message);
+    }
+
+    // The content will be updated by the watcher
+  } catch (error) {
+    console.error(`Error generating article:`, error);
+    localArticle.value.content = 'Error generating content';
+    localArticle.value.isContentProcessing = false;
+    localArticle.value.isTitleProcessing = false;
+  }
+};
+
 const goBack = () => {
   newsStore.clearNews();  
   router.push('/article');
 };
 
-const regenerateArticle = async () => {
-  await generateArticle();
-  console.log(`Regenerating article`);
+const regenerateTitle = async () => {
+  await generateTitle();
+  console.log(`Regenerating title`);
+};
+
+const regenerateContent = async () => {
+  await generateContent();
+  console.log(`Regenerating content`);
 };
 
 const editArticle = () => {
