@@ -1,7 +1,7 @@
 import { defineEventHandler, readBody } from 'h3';
-import { processStructureDataStreaming } from '../openaiService';
+import { processGenerateWithPerplexityStreamOnline, processStructureDataStreaming } from '../openaiService';
 import { z } from 'zod';
-import { essayStructureMessage } from '@/constants/prompt';
+import { browseTopic, essayStructureMessage } from '@/constants/prompt';
 
 const essaySchema = z.object({
   essay: z.object({
@@ -22,13 +22,13 @@ const journalSchema = z.object({
   }),
 });
 
-const getSchemaAndMessage = (documentType: string, language: string, characteristic: string, text: string) => {
+const getSchemaAndMessage = (documentType: string, language: string, characteristic: string, text: string, searchContext?: string) => {
   let schema;
   let message;
 
   if (documentType === 'essay') {
     schema = essaySchema;
-    message = essayStructureMessage(text, language, characteristic);
+    message = essayStructureMessage(text, language, characteristic, searchContext);
   } else if (documentType === 'journal') {
     schema = journalSchema;
     message = [
@@ -43,7 +43,9 @@ const getSchemaAndMessage = (documentType: string, language: string, characteris
 };
 
 export default defineEventHandler(async (event) => {
-  const { prompt, documentType, language, characteristic} = await readBody(event);
+  let stream;
+
+  const { prompt, documentType, language, characteristic, useWebSearch } = await readBody(event);
 
   if (!prompt || !documentType) {
     throw createError({
@@ -51,9 +53,20 @@ export default defineEventHandler(async (event) => {
       statusMessage: 'Topic and document type are required',
     });
   }
-  
-  const { schema, message } = getSchemaAndMessage(documentType, language, characteristic, prompt);
-  const stream = await processStructureDataStreaming(message, { schema });
+
+  if (useWebSearch) {
+    const browseResult = browseTopic(prompt, language);
+    const {text: searchContext} = await processGenerateWithPerplexityStreamOnline(browseResult);
+    console.log(searchContext);
+    
+    const { schema, message } = getSchemaAndMessage(documentType, language, characteristic, prompt, searchContext);
+    stream = await processStructureDataStreaming(message, { schema });
+  }
+
+  else {
+    const { schema, message } = getSchemaAndMessage(documentType, language, characteristic, prompt);
+    stream = await processStructureDataStreaming(message, { schema });
+  }
 
   return stream.toTextStreamResponse();
 });

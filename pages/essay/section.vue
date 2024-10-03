@@ -1,7 +1,11 @@
 <template>
   <div class="container mx-auto px-4 py-8">
     <h1 class="text-4xl font-bold mb-4">Editor Page</h1>
-    <p class="text-xl mb-8 text-gray-600">Review and edit the main ideas below</p>
+    <p class="text-xl mb-2 text-gray-600">Review and edit the main ideas below</p>
+    <div class="flex items-center mb-6 text-sm text-gray-500">
+      <Globe class="h-4 w-4 mr-2" />
+      <span>Using Web Search: {{ localUseWebSearch ? 'Yes' : 'No' }}</span>
+    </div>
     <div class="mb-8 space-y-4">
       <template v-if="isLoading">
         <Skeleton v-for="i in 5" :key="i" class="h-10 w-full" />
@@ -67,6 +71,7 @@ import { useCompletion } from '@ai-sdk/vue';
 import { parse } from 'partial-json';
 
 import { Icon } from '@iconify/vue';
+import { Globe } from 'lucide-vue-next';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -83,11 +88,19 @@ import type { Essay, Section } from '@/types/essay';
 const router = useRouter();
 const essayStore = useEssayStore();
 
-const { essay, topic, documentType, language, characteristic } = storeToRefs(essayStore) as { essay: Ref<Essay>, topic: Ref<string>, documentType: Ref<string>, language: Ref<string>, characteristic: Ref<string> };
+const { essay, topic, documentType, language, characteristic, useWebSearch } = storeToRefs(essayStore) as { 
+  essay: Ref<Essay>, 
+  topic: Ref<string>, 
+  documentType: Ref<string>, 
+  language: Ref<string>, 
+  characteristic: Ref<string>,
+  useWebSearch: Ref<boolean>
+};
 
 const localEssay = ref<Essay>(essayStore.essay);
 const localTopic = ref(essayStore.topic);
 const localDocumentType = ref(essayStore.documentType);
+const localUseWebSearch = ref(useWebSearch.value);
 
 const isLoading = ref(false);
 
@@ -165,7 +178,8 @@ const fetchSection = async () => {
       body: { 
         documentType: localDocumentType.value, 
         language: language.value, 
-        characteristic: characteristic.value 
+        characteristic: characteristic.value,
+        useWebSearch: localUseWebSearch.value
       }
     });
 

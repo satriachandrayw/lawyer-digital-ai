@@ -1,9 +1,10 @@
 import { defineEventHandler, readBody } from 'h3'
-import { processStructureDataStreaming } from '../openaiService'
-import { essaySectionMessage } from '@/constants/prompt'
+import { processGenerateWithPerplexityStreamOnline, processStructureDataStreaming } from '../openaiService'
+import { browseTopicWithSection, essaySectionMessage } from '@/constants/prompt'
 import { z } from 'zod';
 
 import type { Section, EssaySectionResponse } from '@/types/essay';
+import { CoreMessage } from 'ai';
 
 const sectionSchema: z.ZodType<Section> = z.object({
   index: z.number().describe('Section index'),
@@ -16,8 +17,9 @@ const essaySchema: z.ZodType<EssaySectionResponse> = z.object({
 });
 
 export default defineEventHandler(async (event) => {
+  let messages: CoreMessage[] = [];
   const body = await readBody(event)
-  const { prompt, documentType, language, characteristic, sectionIndex, currentSections } = body
+  const { prompt, documentType, language, characteristic, sectionIndex, currentSections, useWebSearch, topic } = body
 
   if (!prompt || !documentType || sectionIndex === undefined || !currentSections) {
     throw createError({
@@ -27,7 +29,15 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
-    const messages = essaySectionMessage(prompt, documentType, language, characteristic, sectionIndex, currentSections)
+    if (useWebSearch) {
+      const browseResult = browseTopicWithSection(topic, prompt, language);
+      const {text: searchContext} = await processGenerateWithPerplexityStreamOnline(browseResult);
+      console.log(searchContext);
+      messages = essaySectionMessage(topic, documentType, language, characteristic, sectionIndex, currentSections, searchContext)
+    }
+    else {
+      messages = essaySectionMessage(prompt, documentType, language, characteristic, sectionIndex, currentSections)
+    }
 
     const response = await processStructureDataStreaming(messages, {
       stream: true,

@@ -34,6 +34,13 @@
           </SelectContent>
         </Select>
       </div>
+      <div class="flex items-center space-x-2 mb-6">
+        <Globe class="h-5 w-5 text-gray-500" />
+        <span class="mr-2">Search on the web</span>
+        <Switch 
+        v-model:checked="localUseWebSearch"
+        />
+      </div>
       <Button 
         @click="generateOutline" 
         class="w-full"
@@ -54,6 +61,8 @@ import { useEssayStore } from '@/stores/essayStore';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectTrigger, SelectContent, SelectGroup, SelectItem, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
+import { Globe } from 'lucide-vue-next';
 
 const router = useRouter();
 const essayStore = useEssayStore();
@@ -62,6 +71,7 @@ const { topic } = storeToRefs(essayStore);
 const localTopic = ref(topic.value);
 const selectedLanguage = ref('');
 const selectedCharacteristic = ref('');
+const localUseWebSearch = ref(false);
 
 const languages = [
   { value: 'en', label: 'English' },
@@ -85,6 +95,7 @@ const generateOutline = async () => {
       essayStore.setTopic(localTopic.value);
       essayStore.setLanguage(selectedLanguage.value);
       essayStore.setCharacteristic(selectedCharacteristic.value);
+      essayStore.setUseWebSearch(localUseWebSearch.value);
       
       // Navigate to the section page
       router.push('/essay/section');

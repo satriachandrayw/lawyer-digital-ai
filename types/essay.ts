@@ -23,4 +23,5 @@ export interface EssayState {
   topic: string;
   language: string;
   characteristic: string;
+  useWebSearch: boolean;
 }

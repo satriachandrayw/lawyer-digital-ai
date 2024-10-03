@@ -17,6 +17,48 @@ const generateDefaultOptions = () => ({
   },
 });
 
+const generateDefaultOptionsOnline = () => ({
+  model: openrouter("perplexity/llama-3.1-sonar-small-128k-online"),
+  headers: {
+    "HTTP-Referer": "https://your-site.com",
+    "X-Title": "Asisten Hukum Indonesia",
+  },
+});
+
+export const processGenerateWithPerplexityStreamOnline = async (messages: CoreMessage[], options = {}) => {
+  const defaultOptions = generateDefaultOptionsOnline();
+  defaultOptions.temperature = 0.8;
+  defaultOptions.stream = true;
+
+  const mergedOptions = { ...defaultOptions, ...options, messages };
+
+  try {
+    const response = await generateText(mergedOptions);
+
+    return response;
+  } catch (error) {
+    console.error("Error processing final response:", error);
+    throw error;
+  }
+};
+
+export const processWithPerplexityStreamOnline = async (messages: CoreMessage[], options = {}) => {
+  const defaultOptions = generateDefaultOptionsOnline();
+  defaultOptions.temperature = 0.8;
+  defaultOptions.stream = true;
+
+  const mergedOptions = { ...defaultOptions, ...options, messages };
+
+  try {
+    const response = await streamText(mergedOptions);
+
+    return response;
+  } catch (error) {
+    console.error("Error processing final response:", error);
+    throw error;
+  }
+};
+
 export const processWithOpenAI = async (messages: CoreMessage[], options = {}) => {
   const defaultOptions = generateDefaultOptions();
   defaultOptions.stream = true;

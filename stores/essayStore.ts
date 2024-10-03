@@ -12,6 +12,7 @@ export const useEssayStore = defineStore('essay', {
     topic: '',
     language: '',
     characteristic: '',
+    useWebSearch: false,
   }),
   actions: {
     setTitle(title: string) {
@@ -49,6 +50,9 @@ export const useEssayStore = defineStore('essay', {
     },
     setEssay(essay: Essay) {
       this.essay = essay;
+    },
+    setUseWebSearch(value: boolean) {
+      this.useWebSearch = value;
     }
   }
 })

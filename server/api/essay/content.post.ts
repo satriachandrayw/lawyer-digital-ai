@@ -3,8 +3,8 @@ import { z } from "zod";
 
 import type { Section } from '@/types/essay';
 
-import { processStructureDataStreaming } from "@/server/api/openaiService";
-import { essayContentMessage } from "@/constants/prompt";
+import { processGenerateWithPerplexityStreamOnline, processStructureDataStreaming } from "@/server/api/openaiService";
+import { browseTopicWithSection, essayContentMessage } from "@/constants/prompt";
 
 import type { CoreMessage } from "ai";
 
@@ -20,8 +20,10 @@ const sectionSchema: z.ZodType<Section> = z.object({
 });
 
 export default defineEventHandler(async event => {
+  let messages: CoreMessage[] = [];
+
   const body = await readBody(event);
-  const { prompt, topic, language, characteristic, index } = body;
+  const { prompt, topic, language, characteristic, index, useWebSearch } = body;
 
   if (!prompt || typeof prompt !== "string" || !topic || typeof topic !== "string") {
     throw createError({
@@ -29,7 +31,17 @@ export default defineEventHandler(async event => {
       message: "Invalid section or topic data",
     });
   }
-  const messages = essayContentMessage(topic, language, characteristic, index, prompt.title) as CoreMessage[];
+
+  if (useWebSearch) {
+    const browseResult = browseTopicWithSection(topic, prompt, language);
+    const {text: searchContext} = await processGenerateWithPerplexityStreamOnline(browseResult);
+    console.log(searchContext);
+    
+    messages = essayContentMessage(topic, language, characteristic, index, prompt.title, searchContext) as CoreMessage[];
+  }
+  else {
+    messages = essayContentMessage(topic, language, characteristic, index, prompt.title) as CoreMessage[];
+  }
   
   const options = {
     schema: sectionSchema,
