@@ -3,8 +3,10 @@ import { generateText, streamText, generateObject, streamObject, CoreMessage, St
 
 import { retryWithExponentialBackoff } from "@/utils/promise";
 
+const runtimeConfig = useRuntimeConfig()
+
 const openrouter = createOpenRouter({
-  apiKey: process.env.OPENROUTER_API_KEY || "",
+  apiKey: runtimeConfig.openrouterApiKey || "",
   baseURL: "https://openrouter.ai/api/v1",
 });
 

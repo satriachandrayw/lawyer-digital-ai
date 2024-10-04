@@ -18,7 +18,8 @@ export default defineNuxtConfig({
   modules: [
     '@nuxtjs/color-mode',
     'shadcn-nuxt',
-    '@pinia/nuxt'
+    '@pinia/nuxt',
+    '@nuxtjs/supabase'
   ],
   colorMode: {
     classSuffix: ''
@@ -35,7 +36,11 @@ export default defineNuxtConfig({
     componentDir: './components/ui'
   },
   runtimeConfig: {
-    openrouterApiKey: process.env.OPENROUTER_API_KEY
+    openrouterApiKey: process.env.OPENROUTER_API_KEY,
+    supabaseUrl: process.env.SUPABASE_URL,
+    supabaseAnonKey: process.env.SUPABASE_KEY,
+    supabaseServiceKey: process.env.SUPABASE_SERVICE_KEY,
+    siteUrl: process.env.SITE_URL
   },
   nitro: {
     storage: {
@@ -66,5 +71,8 @@ export default defineNuxtConfig({
   plugins: [
     { src: '~/plugins/quill.client.ts', mode: 'client' },
     { src: '~/plugins/html2pdf.client.ts', mode: 'client' }
-  ]
+  ],
+  supabase:{
+    redirect: false
+  }
 })
