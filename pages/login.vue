@@ -25,17 +25,11 @@ const signInWithGoogle = async () => {
     const { data } = await auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: 'http://localhost:3000/essay'
+        redirectTo: 'http://localhost:3000/redirect'
       }
     })
   } catch (error) {
     console.error('Error initiating Google sign-in:', error);
   }
 };
-
-watch(user, () => {
-  if (user.value) {
-    return navigateTo('/essay')
-  }
-}, { immediate: true })
 </script>

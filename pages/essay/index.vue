@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col items-center justify-center min-h-screen">
+  <div class="flex flex-col items-center justify-center py-8 px-4">
     <h1 class="text-4xl font-bold mb-4">Essay Creator</h1>
     <p class="text-xl mb-8">Enter a topic and let's get started!</p>
     <div class="w-full max-w-md">
@@ -112,5 +112,9 @@ onMounted(() => {
   if (!user.value) {
     return navigateTo('/')
   }
+})
+
+definePageMeta({
+  layout: 'apps'
 })
 </script>

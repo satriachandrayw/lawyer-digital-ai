@@ -1,54 +1,58 @@
 <template>
-  <div class="container mx-auto px-4 py-8">
-    <div class="flex justify-between items-center mb-6">
-      <h1 class="text-4xl font-bold">{{ localEssay.title }}</h1>
-      <Button @click="regenerateAll" variant="outline">Generate All</Button>
-    </div>
-    <div class="mb-8 space-y-4">
-      <div v-for="(section, index) in localEssay.sections" :key="index" class="rounded-lg shadow-md p-6">
-        <div class="flex items-start space-x-4">
-          <div class="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg">
-            {{ index + 1 }}
-          </div>
-          <div class="flex-grow">
-            <h2 class="text-xl font-bold mb-2">{{ section.title }}</h2>
-            <div class="p-4 border rounded">
-              <div v-if="!section.content && !section.isProcessing" class="space-y-2">
-                <Button @click="generateContent(index)" variant="outline">
-                  <Icon icon="radix-icons:update" class="w-5 h-5 mr-2" />
-                  Generate Content
-                </Button>
+  <div class="flex flex-col items-center justify-center py-8 px-4">
+    <div class="w-full max-w-4xl">
+      <div class="container mx-auto px-4 py-8">
+        <div class="flex justify-between items-center mb-6">
+          <h1 class="text-4xl font-bold">{{ localEssay.title }}</h1>
+          <Button @click="regenerateAll" variant="outline">Generate All</Button>
+        </div>
+        <div class="mb-8 space-y-4">
+          <div v-for="(section, index) in localEssay.sections" :key="index" class="rounded-lg shadow-md p-6">
+            <div class="flex items-start space-x-4">
+              <div class="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg">
+                {{ index + 1 }}
               </div>
-              <div v-else-if="section.isProcessing" class="space-y-2">
-                <Skeleton class="h-4 w-full" />
-                <Skeleton class="h-4 w-[90%]" />
-                <Skeleton class="h-4 w-[80%]" />
+              <div class="flex-grow">
+                <h2 class="text-xl font-bold mb-2">{{ section.title }}</h2>
+                <div class="p-4 border rounded">
+                  <div v-if="!section.content && !section.isProcessing" class="space-y-2">
+                    <Button @click="generateContent(index)" variant="outline">
+                      <Icon icon="radix-icons:update" class="w-5 h-5 mr-2" />
+                      Generate Content
+                    </Button>
+                  </div>
+                  <div v-else-if="section.isProcessing" class="space-y-2">
+                    <Skeleton class="h-4 w-full" />
+                    <Skeleton class="h-4 w-[90%]" />
+                    <Skeleton class="h-4 w-[80%]" />
+                  </div>
+                  <div v-else class="whitespace-pre-wrap">
+                    {{ section.content }}
+                  </div>
+                </div>
               </div>
-              <div v-else class="whitespace-pre-wrap">
-                {{ section.content }}
-              </div>
+            </div>
+            <div class="mt-4 flex justify-end space-x-2" v-if="section.content">
+              <Button @click="regenerateContent(index)" variant="outline" size="sm">
+                <Icon icon="radix-icons:update" class="w-4 h-4 mr-2" />
+                Regenerate
+              </Button>
             </div>
           </div>
         </div>
-        <div class="mt-4 flex justify-end space-x-2" v-if="section.content">
-          <Button @click="regenerateContent(index)" variant="outline" size="sm">
-            <Icon icon="radix-icons:update" class="w-4 h-4 mr-2" />
-            Regenerate
-          </Button>
-        </div>
-      </div>
-    </div>
-    <div class="flex justify-between mt-6">
-      <Button @click="goBack" variant="outline">Back</Button>
-      <div class="flex space-x-2">
-        <div class="w-[100px]">
-          <Button 
-            @click="composeEssay" 
-            v-if="allContentsGenerated"
-            class="w-full"
-          >
-            Compose
-          </Button>
+        <div class="flex justify-between mt-6">
+          <Button @click="goBack" variant="outline">Back</Button>
+          <div class="flex space-x-2">
+            <div class="w-[100px]">
+              <Button 
+                @click="composeEssay" 
+                v-if="allContentsGenerated"
+                class="w-full"
+              >
+                Compose
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -165,4 +169,8 @@ watch(completion, (newCompletion) => {
     }
   }
 });
+
+definePageMeta({
+  layout: 'apps'
+})
 </script>

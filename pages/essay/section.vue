@@ -269,4 +269,8 @@ onMounted(() => {
     fetchSection();
   } 
 });
+
+definePageMeta({
+  layout: 'apps'
+})
 </script>

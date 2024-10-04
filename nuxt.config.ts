@@ -73,6 +73,9 @@ export default defineNuxtConfig({
     { src: '~/plugins/html2pdf.client.ts', mode: 'client' }
   ],
   supabase:{
-    redirect: false
+    redirectOptions:{
+      login: '/login',
+      include: ['/essay(/*)?']
+    }
   }
 })
