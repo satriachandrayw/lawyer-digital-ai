@@ -21,6 +21,8 @@ const {auth} = useSupabaseClient()
 const user = useSupabaseUser()
 
 const signInWithGoogle = async () => {
+  console.log(runtimeConfig.public.siteUrl);
+
 
   try {
     const { data } = await auth.signInWithOAuth({
