@@ -40,7 +40,9 @@ export default defineNuxtConfig({
     supabaseUrl: process.env.SUPABASE_URL,
     supabaseAnonKey: process.env.SUPABASE_KEY,
     supabaseServiceKey: process.env.SUPABASE_SERVICE_KEY,
-    siteUrl: process.env.SITE_URL
+    public: {
+      siteUrl: process.env.SITE_URL
+    }
   },
   nitro: {
     storage: {

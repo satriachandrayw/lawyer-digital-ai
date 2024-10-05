@@ -21,11 +21,12 @@ const {auth} = useSupabaseClient()
 const user = useSupabaseUser()
 
 const signInWithGoogle = async () => {
+
   try {
     const { data } = await auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${runtimeConfig.siteUrl}/redirect`
+        redirectTo: `${runtimeConfig.public.siteUrl}/redirect`
       }
     })
   } catch (error) {
