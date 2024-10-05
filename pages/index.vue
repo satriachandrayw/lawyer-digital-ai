@@ -6,17 +6,18 @@
 
     <main class="flex-grow flex flex-col justify-center items-center text-center px-4">
       <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold mb-4">
-          <v-typical
+        <v-typical
           :steps="['Craft Compelling Essays', 1000, 'Generate Insightful Articles', 1000, 'Elevate Your Writing', 1000]"
           :loop="Infinity"
-            :wrapper="'h1'"
-            class="typing-text"
-          ></v-typical>
+          :wrapper="'h1'"
+          class="typing-text"
+        ></v-typical>
       </h1>
       <p class="text-xl md:text-2xl mb-8">Your ultimate writing assistant</p>
       <button 
-      @click="goToEssay" 
-      class="bg-white text-purple-700 hover:bg-purple-100 text-lg px-8 py-4 rounded-full transition duration-300">
+        @click="handleStartWriting" 
+        class="bg-white text-purple-700 hover:bg-purple-100 text-lg px-8 py-4 rounded-full transition duration-300"
+      >
         Start Writing Now
       </button>
     </main>
@@ -33,11 +34,16 @@ import VTypical from 'vue-typical'
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
-
 const currentYear = ref(new Date().getFullYear())
 
-const goToEssay = () => {
-  router.push('/essay');
+const user = useSupabaseUser()
+
+const handleStartWriting = async () => {
+  if (user.value) {
+    router.push('/essay');
+  } else {
+    router.push('/login');
+  }
 };
 </script>
 

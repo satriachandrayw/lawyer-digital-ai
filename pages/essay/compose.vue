@@ -79,6 +79,10 @@ onMounted(async () => {
   fullEssayContent.value = formatEssayContent();
   isLoading.value = false;
 });
+
+definePageMeta({
+  layout: 'apps'
+})
 </script>
 
 <style>
