@@ -2,7 +2,8 @@ import { defineEventHandler, readBody } from 'h3'
 import { z } from 'zod'
 import type { CoreMessage } from 'ai'
 import { processGenerateWithPerplexityStreamOnline, processStructureDataStreaming } from '../openaiService'
-import { browseTopicWithSection, essaySectionMessage } from '@/constants/prompt'
+import { essaySectionMessage } from '@/constants/essayPrompts'
+import { browseTopicWithSection } from '@/constants/browsePrompts'
 
 import type { Section, EssaySectionResponse } from '@/types/essay'
 

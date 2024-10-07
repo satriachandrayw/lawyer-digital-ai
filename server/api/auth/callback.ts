@@ -6,7 +6,7 @@ const runtimeConfig = useRuntimeConfig()
 const supabase = createClient(runtimeConfig.supabaseUrl, runtimeConfig.supabaseAnonKey)
 
 export default defineEventHandler(async (event) => {
-  const { req, res } = event.node
+  const { res } = event.node
   const { code } = getQuery(event)
 
   if (code) {

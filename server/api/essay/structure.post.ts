@@ -1,7 +1,8 @@
 import { defineEventHandler, readBody } from 'h3'
 import { z } from 'zod'
 import { processGenerateWithPerplexityStreamOnline, processStructureDataStreaming } from '../openaiService'
-import { browseTopic, essayStructureMessage } from '@/constants/prompt'
+import { essayStructureMessage } from '@/constants/essayPrompts'
+import { browseTopic } from '@/constants/browsePrompts'
 
 const essaySchema = z.object({
   essay: z.object({
