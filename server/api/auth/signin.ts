@@ -17,7 +17,7 @@ export default defineEventHandler(async (event) => {
     console.error('Error initiating Google sign-in:', error)
     return { error: 'Failed to initiate sign-in' }
   }
-  console.log(data.url);
-  
-  return data;
+  console.log(data.url)
+
+  return data
 })

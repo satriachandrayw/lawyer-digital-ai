@@ -1,62 +1,62 @@
 <template>
   <div class="quill-editor">
-    <div ref="editor"></div>
+    <div ref="editor" />
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue';
-import { useNuxtApp } from '#app';
+import { ref, onMounted, watch } from 'vue'
+import { useNuxtApp } from '#app'
 
 const props = defineProps({
   modelValue: {
     type: String,
-    default: '<p>Start typing...</p>'
-  }
-});
+    default: '<p>Start typing...</p>',
+  },
+})
 
-const emit = defineEmits(['update:modelValue']);
+const emit = defineEmits(['update:modelValue'])
 
-const editor = ref(null);
-const quillInstance = ref(null);
+const editor = ref(null)
+const quillInstance = ref(null)
 
 onMounted(() => {
-  const { $quill } = useNuxtApp();
-  
+  const { $quill } = useNuxtApp()
+
   quillInstance.value = new $quill(editor.value, {
     theme: 'snow',
     modules: {
       toolbar: [
         ['bold', 'italic', 'underline', 'strike'],
         ['blockquote'],
-        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-        [{ 'indent': '-1'}, { 'indent': '+1' }],
-        [{ 'direction': 'rtl' }],
-        [{ 'size': ['small', false, 'large', 'huge'] }],
-        [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
-        [{ 'color': [] }, ],
-        [{ 'font': [] }],
-        [{ 'align': [] }],
-        ['clean']
-      ]
-    }
-  });
+        [{ list: 'ordered' }, { list: 'bullet' }],
+        [{ indent: '-1' }, { indent: '+1' }],
+        [{ direction: 'rtl' }],
+        [{ size: ['small', false, 'large', 'huge'] }],
+        [{ header: [1, 2, 3, 4, 5, 6, false] }],
+        [{ color: [] }],
+        [{ font: [] }],
+        [{ align: [] }],
+        ['clean'],
+      ],
+    },
+  })
 
-  quillInstance.value.root.innerHTML = props.modelValue;
+  quillInstance.value.root.innerHTML = props.modelValue
 
   quillInstance.value.on('text-change', () => {
-    emit('update:modelValue', quillInstance.value.root.innerHTML);
-  });
-});
+    emit('update:modelValue', quillInstance.value.root.innerHTML)
+  })
+})
 
 watch(() => props.modelValue, (newContent) => {
   if (quillInstance.value && newContent !== quillInstance.value.root.innerHTML) {
-    quillInstance.value.root.innerHTML = newContent;
+    quillInstance.value.root.innerHTML = newContent
   }
-});
+})
 
 // Expose the Quill instance
-defineExpose({ quillInstance });
+defineExpose({ quillInstance })
 </script>
 
 <style>

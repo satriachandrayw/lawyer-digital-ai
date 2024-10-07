@@ -1,13 +1,29 @@
 <template>
   <div class="container mx-auto px-4 py-8">
-    <h1 class="text-3xl font-bold mb-6">Unggah Surat Gugatan Anda</h1>
-    <FileUpload @file-uploaded="handleFileChange" :is-processing="isProcessing" />
-    
-    <ProcessingStatus v-if="isProcessing" :progress="progress" />
-    
-    <AIResponse v-if="processState === 'Waiting AI Response'" :ai-response="aiResponse" :is-loading="isLoading" />
-    
-    <div v-if="error" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mt-4" role="alert">
+    <h1 class="text-3xl font-bold mb-6">
+      Unggah Surat Gugatan Anda
+    </h1>
+    <FileUpload
+      :is-processing="isProcessing"
+      @file-uploaded="handleFileChange"
+    />
+
+    <ProcessingStatus
+      v-if="isProcessing"
+      :progress="progress"
+    />
+
+    <AIResponse
+      v-if="processState === 'Waiting AI Response'"
+      :ai-response="aiResponse"
+      :is-loading="isLoading"
+    />
+
+    <div
+      v-if="error"
+      class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mt-4"
+      role="alert"
+    >
       <strong class="font-bold">Error!</strong>
       <span class="block sm:inline">{{ error }}</span>
     </div>
@@ -26,7 +42,7 @@ const error = ref<string | null>(null)
 const { processFile, isProcessing, aiResponse, progress, isLoading, processState } = useAIProcessing()
 
 const handleFileChange = (event: Event) => {
-  error.value = null  // Clear any previous errors
+  error.value = null // Clear any previous errors
   const target = event.target as HTMLInputElement
   if (target.files && target.files.length > 0) {
     const file = target.files[0]
@@ -36,9 +52,10 @@ const handleFileChange = (event: Event) => {
 
 const handleSubmit = async (file: File) => {
   try {
-    error.value = null  // Clear any previous errors
+    error.value = null // Clear any previous errors
     await processFile(file)
-  } catch (err) {
+  }
+  catch (err) {
     console.error('Kesalahan saat memproses file:', err)
     error.value = err instanceof Error ? err.message : 'Terjadi kesalahan saat memproses file'
   }

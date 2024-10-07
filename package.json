@@ -8,10 +8,13 @@
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
-    "postinstall": "nuxt prepare"
+    "postinstall": "nuxt prepare",
+    "lint": "eslint .",
+    "lint:fix": "eslint --fix ."
   },
   "dependencies": {
     "@iconify/vue": "^4.1.2",
+    "@nuxt/eslint": "^0.5.7",
     "@nuxtjs/color-mode": "^3.4.4",
     "@nuxtjs/supabase": "^1.4.0",
     "@openrouter/ai-sdk-provider": "^0.0.5",

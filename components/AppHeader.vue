@@ -9,13 +9,13 @@ const route = useRoute()
 const tabs = [
   { name: 'Home', href: '/' },
   { name: 'Upload Respon Gugatanmu', href: '/upload-respon-gugatanmu' },
-  { name: 'Journal Creator', href: '/essay' }
+  { name: 'Journal Creator', href: '/essay' },
 ]
 
 const activeTab = computed(() => {
   // Set activeTab to 'Journal Creator' if the route starts with '/essay'
   if (route.path.startsWith('/essay')) {
-    return tabs[2]; // Journal Creator tab
+    return tabs[2] // Journal Creator tab
   }
   return tabs.find(tab => tab.href === route.path) || tabs[0]
 })
@@ -29,14 +29,17 @@ const toggleColorMode = () => {
   <header class="flex justify-between items-center p-4 bg-background">
     <nav>
       <ul class="flex space-x-4">
-        <li v-for="tab in tabs" :key="tab.name">
+        <li
+          v-for="tab in tabs"
+          :key="tab.name"
+        >
           <NuxtLink
             :to="tab.href"
             :class="[
               'px-3 py-2 rounded-md text-sm font-medium',
               activeTab.href === tab.href
                 ? 'bg-primary text-primary-foreground'
-                : 'text-foreground hover:bg-muted'
+                : 'text-foreground hover:bg-muted',
             ]"
           >
             {{ tab.name }}

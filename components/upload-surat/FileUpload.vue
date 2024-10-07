@@ -1,14 +1,20 @@
 <template>
-  <form @submit.prevent="handleSubmit" class="mb-8">
+  <form
+    class="mb-8"
+    @submit.prevent="handleSubmit"
+  >
     <div class="mb-4">
-      <label for="pdfFile" class="block text-sm font-medium text-gray-700">Unggah File PDF</label>
+      <label
+        for="pdfFile"
+        class="block text-sm font-medium text-gray-700"
+      >Unggah File PDF</label>
       <input
-        type="file"
         id="pdfFile"
         ref="fileInput"
+        type="file"
         accept=".pdf"
-        @change="handleFileChange"
         class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+        @change="handleFileChange"
       >
     </div>
     <button

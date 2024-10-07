@@ -16,7 +16,7 @@ onMounted(() => {
   messages.value.push({
     id: 'welcome',
     role: 'assistant',
-    content: "Opoo rek?"
+    content: 'Opoo rek?',
   })
 })
 
@@ -35,7 +35,8 @@ let typingAnimation
 watch(isLoading, (loading) => {
   if (loading) {
     typingAnimation = animateTyping()
-  } else {
+  }
+  else {
     clearInterval(typingAnimation)
   }
 })
@@ -44,33 +45,50 @@ watch(isLoading, (loading) => {
 <template>
   <div class="chatbot-container flex flex-col h-[600px] w-full max-w-md mx-auto border rounded-lg shadow-lg">
     <ScrollArea class="flex-grow p-4">
-      <div v-for="message in messages" :key="message.id" class="mb-4">
-        <div :class="[
-          'p-3 rounded-lg',
-          message.role === 'user' ? 'bg-primary text-primary-foreground ml-auto' : 'bg-muted',
-          'max-w-[80%]'
-        ]">
+      <div
+        v-for="message in messages"
+        :key="message.id"
+        class="mb-4"
+      >
+        <div
+          :class="[
+            'p-3 rounded-lg',
+            message.role === 'user' ? 'bg-primary text-primary-foreground ml-auto' : 'bg-muted',
+            'max-w-[80%]',
+          ]"
+        >
           {{ message.content }}
         </div>
       </div>
-      <div v-if="isLoading" class="typing-indicator mb-4">
-        <div :class="[
-          'p-3 rounded-lg',
-          'bg-muted',
-          'max-w-[80%]'
-        ]">
+      <div
+        v-if="isLoading"
+        class="typing-indicator mb-4"
+      >
+        <div
+          :class="[
+            'p-3 rounded-lg',
+            'bg-muted',
+            'max-w-[80%]',
+          ]"
+        >
           <strong>AI:</strong> Mengetik{{ typingIndicator }}
         </div>
       </div>
     </ScrollArea>
     <div class="p-4 border-t">
-      <form @submit.prevent="handleSubmit" class="flex space-x-2">
+      <form
+        class="flex space-x-2"
+        @submit.prevent="handleSubmit"
+      >
         <Input
           v-model="input"
           placeholder="Ask a legal question..."
           class="flex-grow"
         />
-        <Button type="submit" :disabled="input.length === 0">
+        <Button
+          type="submit"
+          :disabled="input.length === 0"
+        >
           Send
         </Button>
       </form>

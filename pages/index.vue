@@ -1,7 +1,11 @@
 <template>
   <div class="min-h-screen w-full bg-gradient-to-r from-blue-300 to-purple-500 text-white flex flex-col">
     <header class="container mx-auto py-4 px-4 flex justify-end">
-      <img src="@/assets/ahli-hukum.png" alt="Logo" class="logo" />
+      <img
+        src="@/assets/ahli-hukum.png"
+        alt="Logo"
+        class="logo"
+      >
     </header>
 
     <main class="flex-grow flex flex-col justify-center items-center text-center px-4">
@@ -11,12 +15,14 @@
           :loop="Infinity"
           :wrapper="'h1'"
           class="typing-text"
-        ></v-typical>
+        />
       </h1>
-      <p class="text-xl md:text-2xl mb-8">Your ultimate writing assistant</p>
-      <button 
-        @click="handleStartWriting" 
+      <p class="text-xl md:text-2xl mb-8">
+        Your ultimate writing assistant
+      </p>
+      <button
         class="bg-white text-purple-700 hover:bg-purple-100 text-lg px-8 py-4 rounded-full transition duration-300"
+        @click="handleStartWriting"
       >
         Start Writing Now
       </button>
@@ -31,20 +37,21 @@
 <script setup>
 import { ref } from 'vue'
 import VTypical from 'vue-typical'
-import { useRouter } from 'vue-router';
+import { useRouter } from 'vue-router'
 
-const router = useRouter();
+const router = useRouter()
 const currentYear = ref(new Date().getFullYear())
 
 const user = useSupabaseUser()
 
 const handleStartWriting = async () => {
   if (user.value) {
-    router.push('/essay');
-  } else {
-    router.push('/login');
+    router.push('/essay')
   }
-};
+  else {
+    router.push('/login')
+  }
+}
 </script>
 
 <style scoped>
