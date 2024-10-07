@@ -195,6 +195,6 @@ export const browseTopicWithSection = (topic: string, section: string, language:
   },
   {
     role: 'user', 
-    content: `Please browse the internet and provide a summary of the most relevant and recent information about the following section of the topic: "${section}" within "${topic}". Include key facts, recent developments, and any significant discussions or debates surrounding this section. Just directly provide the summary in ${language}.`
+    content: `Please browse the internet and provide a summary of the most relevant and recent information about the following section of the topic: "${section}" within "${topic}". Include key facts, recent developments, and any significant discussions or debates surrounding this section. Just directly provide the summary in ${language}. Dont provide any information if you dont have any information about the topic.`
   }
 ];

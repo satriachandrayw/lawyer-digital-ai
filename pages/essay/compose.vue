@@ -64,10 +64,11 @@ const updateContent = (newContent: string) => {
 };
 
 const exportEssay = async () => {
-  if (textEditorRef.value?.quillInstance) {
-    await exportToPdf(textEditorRef.value.quillInstance, `${documentTitle.value}.pdf`);
+  if (textEditorRef.value?.editor) {
+    const content = textEditorRef.value.editor.getHTML();
+    await exportToPdf(content, `${documentTitle.value}.pdf`);
   } else {
-    console.error('Quill editor not initialized');
+    console.error('Tiptap editor not initialized');
   }
 };
 
@@ -104,15 +105,23 @@ definePageMeta({
   max-width: none;
 }
 
-.prose h1 {
-  @apply text-3xl font-bold mb-4 dark:text-gray-100;
+.ProseMirror {
+  @apply text-pretty;
 }
 
-.prose h2 {
-  @apply text-2xl font-semibold mt-6 mb-3 dark:text-gray-200;
+.ProseMirror h1 {
+  @apply text-2xl/[1.1rem] font-semibold mt-8 mb-4 dark:text-gray-100;
 }
 
-.prose p {
-  @apply mb-4 dark:text-gray-300;
+.ProseMirror h2 {
+  @apply text-xl/[1.1rem] font-semibold mt-6 mb-4 dark:text-gray-200;
+}
+
+.ProseMirror h3 {
+  @apply text-lg/[1.1rem] font-semibold mt-5 mb-2 dark:text-gray-300;
+}
+
+.ProseMirror p {
+  @apply text-base/[1.1rem] mb-4 dark:text-gray-300;
 }
 </style>
