@@ -22,7 +22,7 @@ export default defineEventHandler(async (event) => {
   const storage = useStorage('redis')
 
   const body = await readBody(event)
-  const { prompt, documentType, language, characteristic, sectionIndex, currentSections, useWebSearch, title } = body
+  const { prompt, documentType, language, characteristic, sectionIndex, currentSections, useWebSearch, title, draftEssay } = body
 
   if (!prompt || !documentType || sectionIndex === undefined || !currentSections) {
     throw createError({
@@ -34,12 +34,12 @@ export default defineEventHandler(async (event) => {
   try {
     if (useWebSearch) {
       const searchContext: string | null = await storage.getItem('searchContext')
-      messages = essaySectionMessage(title, documentType, language, characteristic, sectionIndex, currentSections, searchContext)
+      messages = essaySectionMessage(title, documentType, language, characteristic, sectionIndex, currentSections, draftEssay, searchContext)
     }
     else {
-      messages = essaySectionMessage(prompt, documentType, language, characteristic, sectionIndex, currentSections)
+      messages = essaySectionMessage(prompt, documentType, language, characteristic, sectionIndex, currentSections, draftEssay)
     }
-
+        
     const response = await processStructureDataStreaming(messages, {
       stream: true,
       schema: essaySchema,

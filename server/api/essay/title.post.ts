@@ -13,7 +13,7 @@ export default defineEventHandler(async (event) => {
   }
 
   const messages = essayTitleMessage(topic, language, characteristic)
-  
+
   try {
     const suggestedTitle = await processWithOpenAIFull(messages)
 

@@ -66,6 +66,7 @@ export const processWithPerplexityStreamOnline = async (messages: CoreMessage[],
 export const processWithOpenAI = async (messages: CoreMessage[], options = {}) => {
   const defaultOptions = generateDefaultOptions()
   defaultOptions.stream = true
+  defaultOptions.temperature = 0.7
 
   messages.unshift({
     role: 'system',

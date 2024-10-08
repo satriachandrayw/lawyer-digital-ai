@@ -154,6 +154,12 @@ const updateLocalEssay = (parsedData: any) => {
   }
 }
 
+const getDraftEssay = () => {
+  return localEssay.value.sections
+    .map(section => `${section.title}\n${section.content || ''}`)
+    .join('\n\n');
+}
+
 const generateContent = async (index: number) => {
   if (localEssay.value.sections[index].isProcessing) return
 
@@ -167,7 +173,9 @@ const generateContent = async (index: number) => {
         language: language.value,
         characteristic: characteristic.value,
         useWebSearch: useWebSearch.value,
-        index },
+        index,
+        draftEssay: getDraftEssay(), // Add this line
+      },
     })
 
     if (error.value) {

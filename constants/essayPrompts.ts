@@ -2,18 +2,42 @@ import type { CoreMessage } from "ai"
 
 import { characteristicTone, languageTone } from "./utilPrompt"
 
-const getEssaySystemMessage = (characteristic: string, language: string, searchContext?: string): string => {
+const getEssaySystemMessage = (characteristic: string, language: string, searchContext?: string, draftEssay?: string): string => {
   return searchContext
     ? `I want you to act as an essay writer. 
       You will need to research a given topic, 
-      formulate a thesis statement using ${languageTone(language)}, 
-      and create a piece of work that are ${characteristic} and ${characteristicTone(characteristic)}. 
       Below is the context from internet research to enrich your article:
-      
+      \`
       ${searchContext}
-      
-      use the context only if it is relevant to section you are writing.`
-    : `I want you to act as an essay writer. 
+      \`
+
+      the essay structure is as follows:
+      \`
+      1. introduction
+      the introduction contains something information about the opening of the topic.
+      2. body
+      the body contains the main content of the essay, it is the most important part of the essay.
+      it consist of different section, each section is a paragraph that is related to each other.
+      the section explain the topic in detail based  on the section title itself.
+      use the context from internet research to enrich your essay only if it is relevant to the section you are writing.
+      dont use the context if it not correlated with the section you are writing.
+      3. conclusion
+      the conclusion is the last part of the essay, it is the summary of the body of the essay. not take the context from the internet.
+      \`
+      ` + (
+      draftEssay ? `here's the draft essay :
+      \`
+      ${draftEssay}
+      \`
+      use the draft for generating or updating section you are writing, ensuring consistency and coherence with the existing content.
+      dont write the same content from the draft.
+      ` : '') +
+      `
+      formulate a thesis statement using ${languageTone(language)}, 
+      and create a piece of work that are ${characteristic} and ${characteristicTone(characteristic)}.
+      `
+    : 
+    `I want you to act as an essay writer. 
       You will need to research a given topic, 
       formulate a thesis statement, 
       and create a persuasive piece of work that are ${characteristic} and ${characteristicTone(characteristic)}. `;
@@ -39,13 +63,13 @@ export const essayTitleMessage = (topic: string, language?: string, characterist
   ];
 }
 
-export const essayContentMessage = (topic: string, language: string, characteristic: string, index: number, section: string, searchContext?: string): CoreMessage[] => {
+export const essayContentMessage = (topic: string, language: string, characteristic: string, index: number, section: string, searchContext?: string, draftEssay?: string): CoreMessage[] => {
   const prompt = `
   Write a paragraph for section ${index + 1}: "${section}" 
   based on the topic: "${topic}".
 `
 
-  const systemContent = getEssaySystemMessage(characteristic, language, searchContext);
+  const systemContent = getEssaySystemMessage(characteristic, language, searchContext, draftEssay);
 
   return [
     { role: 'system', content: systemContent },
@@ -53,7 +77,7 @@ export const essayContentMessage = (topic: string, language: string, characteris
   ]
 }
 
-export const essaySectionMessage = (topic: string, documentType: string, language: string, characteristic: string, sectionIndex: number, currentSections: string[], searchContext?: string): CoreMessage[] => {
+export const essaySectionMessage = (topic: string, documentType: string, language: string, characteristic: string, sectionIndex: number, currentSections: string[], searchContext?: string, draftEssay?: string): CoreMessage[] => {
   const prompt = `
     Given an essay on the topic "${topic}" of type "${documentType}", 
     with the following current section titles:
@@ -67,7 +91,7 @@ export const essaySectionMessage = (topic: string, documentType: string, languag
     write down the description just 1 sentence max 100 character.
   `
 
-  const systemContent = getEssaySystemMessage(characteristic, language, searchContext);
+  const systemContent = getEssaySystemMessage(characteristic, language, searchContext, draftEssay);
 
   return [
     { role: 'system', content: systemContent },

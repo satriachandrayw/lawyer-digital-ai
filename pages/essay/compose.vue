@@ -127,7 +127,7 @@ definePageMeta({
 }
 
 .ProseMirror h1 {
-  @apply text-2xl/[1.1rem] font-semibold mt-4 mb-4 dark:text-gray-100;
+  @apply text-2xl/[1.9rem] font-semibold mt-4 mb-4 dark:text-gray-100;
 }
 
 .ProseMirror h2 {

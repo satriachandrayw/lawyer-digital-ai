@@ -24,7 +24,7 @@ export default defineEventHandler(async (event) => {
   const storage = useStorage('redis')
 
   const body = await readBody(event)
-  const { prompt, title, language, characteristic, index, useWebSearch } = body
+  const { prompt, title, language, characteristic, index, useWebSearch, draftEssay } = body
 
   if (!prompt || typeof prompt !== 'string' || !title || typeof title !== 'string') {
     throw createError({
@@ -36,10 +36,10 @@ export default defineEventHandler(async (event) => {
   if (useWebSearch) {
     const searchContext: string | null = await storage.getItem('searchContext')
 
-    messages = essayContentMessage(title, language, characteristic, index, prompt.title, searchContext) as CoreMessage[]
+    messages = essayContentMessage(title, language, characteristic, index, prompt.title, draftEssay, searchContext) as CoreMessage[]
   }
   else {
-    messages = essayContentMessage(title, language, characteristic, index, prompt.title) as CoreMessage[]
+    messages = essayContentMessage(title, language, characteristic, index, prompt.title, draftEssay) as CoreMessage[]
   }
 
   const options = {

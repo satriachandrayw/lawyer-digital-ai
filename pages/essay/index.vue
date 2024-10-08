@@ -83,7 +83,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import { useDebounceFn } from '@vueuse/core'
@@ -122,7 +122,11 @@ const getSuggestedTitle = async () => {
     try {
       const response = await $fetch('/api/essay/title', {
         method: 'POST',
-        body: { topic: localTitle.value },
+        body: { 
+          topic: localTitle.value,
+          language: selectedLanguage.value,
+          characteristic: selectedCharacteristic.value,
+        },
       })
       suggestedTitle.value = response
     } catch (error) {
@@ -132,6 +136,10 @@ const getSuggestedTitle = async () => {
 }
 
 const debouncedGetSuggestedTitle = useDebounceFn(getSuggestedTitle, 2000)
+
+watch([selectedLanguage, selectedCharacteristic], () => {
+  debouncedGetSuggestedTitle()
+}, { immediate: false })
 
 const setTitle = (newTitle: string) => {
   localTitle.value = newTitle
