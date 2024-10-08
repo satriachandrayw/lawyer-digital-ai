@@ -39,6 +39,9 @@ export const useEssayStore = defineStore('essay', {
     clearEssay() {
       this.essay = { title: '', sections: [] }
       this.topic = ''
+      this.language = ''
+      this.characteristic = ''
+      this.useWebSearch = false
     },
     clearSections() {
       this.essay = { title: this.essay.title, sections: [] }
