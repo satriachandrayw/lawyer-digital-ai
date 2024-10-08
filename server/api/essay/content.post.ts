@@ -22,6 +22,8 @@ const sectionSchema: z.ZodType<Section> = z.object({
 export default defineEventHandler(async (event) => {
   let messages: CoreMessage[] = []
 
+  const storage = useStorage('redis')
+
   const body = await readBody(event)
   const { prompt, topic, language, characteristic, index, useWebSearch } = body
 
@@ -33,9 +35,7 @@ export default defineEventHandler(async (event) => {
   }
 
   if (useWebSearch) {
-    const browseResult = browseTopicWithSection(topic, prompt, language)
-    const { text: searchContext } = await processGenerateWithPerplexityStreamOnline(browseResult)
-    console.log(searchContext)
+    const searchContext: string | null = await storage.getItem('searchContext')
 
     messages = essayContentMessage(topic, language, characteristic, index, prompt.title, searchContext) as CoreMessage[]
   }

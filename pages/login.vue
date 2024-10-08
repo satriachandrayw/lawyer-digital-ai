@@ -14,19 +14,15 @@
 </template>
 
 <script setup>
-import { useRouter } from 'vue-router'
 import { Chrome } from 'lucide-vue-next'
 
 const runtimeConfig = useRuntimeConfig()
 
 const { auth } = useSupabaseClient()
-const user = useSupabaseUser()
 
 const signInWithGoogle = async () => {
-  console.log(runtimeConfig.public.siteUrl)
-
   try {
-    const { data } = await auth.signInWithOAuth({
+    await auth.signInWithOAuth({
       provider: 'google',
       options: {
         redirectTo: `${runtimeConfig.public.siteUrl}/redirect`,

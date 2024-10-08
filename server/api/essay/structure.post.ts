@@ -48,6 +48,8 @@ const getSchemaAndMessage = (documentType: string, language: string, characteris
 export default defineEventHandler(async (event) => {
   let stream
 
+  const storage = useStorage('redis')
+
   const { prompt, documentType, language, characteristic, useWebSearch } = await readBody(event)
 
   if (!prompt || !documentType) {
@@ -60,7 +62,7 @@ export default defineEventHandler(async (event) => {
   if (useWebSearch) {
     const browseResult = browseTopic(prompt, language)
     const { text: searchContext } = await processGenerateWithPerplexityStreamOnline(browseResult)
-    console.log(searchContext)
+    storage.setItem('searchContext', searchContext)
 
     const { schema, message } = getSchemaAndMessage(documentType, language, characteristic, prompt, searchContext)
     stream = await processStructureDataStreaming(message, { schema })
