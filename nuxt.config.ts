@@ -53,11 +53,16 @@ export default defineNuxtConfig({
     }
   },
   build: {
-    transpile: ['pdfjs-dist']
+    transpile: ['pdfjs-dist', '@tiptap/vue-3']
   },
   vite: {
     optimizeDeps: {
-      include: ['pdfjs-dist']
+      include: ['pdfjs-dist', 
+        'prosemirror-state',
+        'prosemirror-transform',
+        'prosemirror-model',
+        'prosemirror-view'
+      ]
     },
     plugins: [
       VitePluginCommonjs({
