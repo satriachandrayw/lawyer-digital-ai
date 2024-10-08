@@ -9,8 +9,9 @@
           <Button
             variant="outline"
             @click="regenerateAll"
+            :disabled="isRegeneratingAll"
           >
-            Generate All
+            {{ isRegeneratingAll ? `Generating ${currentRegeneratingIndex + 1}/${localEssay.sections.length}` : 'Generate All' }}
           </Button>
         </div>
         <div class="mb-8 space-y-4">
@@ -29,12 +30,13 @@
                 </h2>
                 <div class="p-4 border rounded">
                   <div
-                    v-if="!section.content && !section.isProcessing"
+                    v-if="(!section.content && !section.isProcessing) || (isRegeneratingAll && index > currentRegeneratingIndex)"
                     class="space-y-2"
                   >
                     <Button
                       variant="outline"
                       @click="generateContent(index)"
+                      :disabled="isRegeneratingAll"
                     >
                       <Icon
                         icon="radix-icons:update"
@@ -61,7 +63,7 @@
               </div>
             </div>
             <div
-              v-if="section.content"
+              v-if="section.content && !isRegeneratingAll"
               class="mt-4 flex justify-end space-x-2"
             >
               <Button
@@ -130,6 +132,9 @@ const { complete, completion, error } = useCompletion({
   },
 })
 
+const isRegeneratingAll = ref(false)
+const currentRegeneratingIndex = ref(-1)
+
 onMounted(() => {
   localEssay.value.sections.forEach((section) => {
     section.isProcessing = false
@@ -174,6 +179,8 @@ const generateContent = async (index: number) => {
   catch (error) {
     console.error(`Error generating content for section ${index + 1}:`, error)
     localEssay.value.sections[index].content = 'Error generating content'
+  }
+  finally {
     localEssay.value.sections[index].isProcessing = false
   }
 }
@@ -194,7 +201,16 @@ const regenerateContent = async (index: number) => {
 }
 
 const regenerateAll = async () => {
-  await Promise.all(localEssay.value.sections.map((_, index) => generateContent(index)))
+  isRegeneratingAll.value = true
+  currentRegeneratingIndex.value = 0
+
+  for (const [index, section] of localEssay.value.sections.entries()) {
+    currentRegeneratingIndex.value = index
+    await generateContent(index)
+  }
+
+  isRegeneratingAll.value = false
+  currentRegeneratingIndex.value = -1
 }
 
 const allContentsGenerated = computed(() =>

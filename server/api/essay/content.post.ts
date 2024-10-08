@@ -4,9 +4,8 @@ import { z } from 'zod'
 import type { CoreMessage } from 'ai'
 import type { Section } from '@/types/essay'
 
-import { processGenerateWithPerplexityStreamOnline, processStructureDataStreaming } from '@/server/api/openaiService'
+import { processStructureDataStreaming } from '@/server/api/openaiService'
 import { essayContentMessage } from '@/constants/essayPrompts'
-import { browseTopicWithSection } from '@/constants/browsePrompts'
 
 const sectionSchema: z.ZodType<Section> = z.object({
   index: z.number(),

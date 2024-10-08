@@ -68,7 +68,7 @@ function formatEssayContent() {
   let formattedContent = `<h1>${essay.value.title}</h1>`
   essay.value.sections.forEach((section) => {
     formattedContent += `<h2>${section.title}</h2>`
-    formattedContent += `<p>${section.content || ''}</p><br>`
+    formattedContent += `<p>${section.content || ''}</p>`
   })
   return formattedContent
 }
@@ -125,7 +125,7 @@ definePageMeta({
 }
 
 .ProseMirror h1 {
-  @apply text-2xl/[1.1rem] font-semibold mt-8 mb-4 dark:text-gray-100;
+  @apply text-2xl/[1.1rem] font-semibold mt-4 mb-4 dark:text-gray-100;
 }
 
 .ProseMirror h2 {
@@ -137,6 +137,6 @@ definePageMeta({
 }
 
 .ProseMirror p {
-  @apply text-base/[1.1rem] mb-4 dark:text-gray-300;
+  @apply text-base/[1.5rem] mb-4 dark:text-gray-300;
 }
 </style>
