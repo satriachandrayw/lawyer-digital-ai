@@ -24,22 +24,22 @@ export default defineEventHandler(async (event) => {
   const storage = useStorage('redis')
 
   const body = await readBody(event)
-  const { prompt, topic, language, characteristic, index, useWebSearch } = body
+  const { prompt, title, language, characteristic, index, useWebSearch } = body
 
-  if (!prompt || typeof prompt !== 'string' || !topic || typeof topic !== 'string') {
+  if (!prompt || typeof prompt !== 'string' || !title || typeof title !== 'string') {
     throw createError({
       statusCode: 400,
-      message: 'Invalid section or topic data',
+      message: 'Invalid section or title data',
     })
   }
 
   if (useWebSearch) {
     const searchContext: string | null = await storage.getItem('searchContext')
 
-    messages = essayContentMessage(topic, language, characteristic, index, prompt.title, searchContext) as CoreMessage[]
+    messages = essayContentMessage(title, language, characteristic, index, prompt.title, searchContext) as CoreMessage[]
   }
   else {
-    messages = essayContentMessage(topic, language, characteristic, index, prompt.title) as CoreMessage[]
+    messages = essayContentMessage(title, language, characteristic, index, prompt.title) as CoreMessage[]
   }
 
   const options = {

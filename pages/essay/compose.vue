@@ -81,6 +81,8 @@ const exportEssay = async () => {
   if (textEditorRef.value?.editor) {
     const content = textEditorRef.value.editor.getHTML()
     await exportToPdf(content, `${documentTitle.value}.pdf`)
+    router.push('/essay')
+    essayStore.clearEssay()
   }
   else {
     console.error('Tiptap editor not initialized')

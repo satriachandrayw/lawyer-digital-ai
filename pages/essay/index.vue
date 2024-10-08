@@ -7,10 +7,22 @@
       Enter a topic and let's get started!
     </p>
     <div class="w-full max-w-md">
+      <!-- Title suggestion -->
+      <div v-if="suggestedTitle" class="mb-4 text-sm text-gray-600">
+        Kami sarankan judulnya: 
+        <span 
+          class="text-blue-600 cursor-pointer hover:underline"
+          @click="setTitle(suggestedTitle)"
+        >
+          {{ suggestedTitle }}
+        </span>
+      </div>
+      <!-- Topic input for generating title suggestion -->
       <Input
-        v-model="localTopic"
-        placeholder="Enter your topic here"
+        v-model="localTitle"
+        placeholder="Enter your topic to get a title suggestion"
         class="w-full mb-4"
+        @input="debouncedGetSuggestedTitle"
       />
       <div class="flex space-x-4 mb-6">
         <Select
@@ -61,7 +73,7 @@
       </div>
       <Button
         class="w-full"
-        :disabled="!localTopic || !selectedLanguage || !selectedCharacteristic"
+        :disabled="!title || !selectedLanguage || !selectedCharacteristic"
         @click="generateOutline"
       >
         Start
@@ -74,6 +86,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
+import { useDebounceFn } from '@vueuse/core'
 
 import { Globe } from 'lucide-vue-next'
 import { useEssayStore } from '@/stores/essayStore'
@@ -84,9 +97,10 @@ import { Switch } from '@/components/ui/switch'
 
 const router = useRouter()
 const essayStore = useEssayStore()
-const { topic } = storeToRefs(essayStore)
+const { essay: title } = storeToRefs(essayStore)
 
-const localTopic = ref(topic.value)
+const localTitle = ref('')
+const suggestedTitle = ref('')
 const selectedLanguage = ref('')
 const selectedCharacteristic = ref('')
 const localUseWebSearch = ref(false)
@@ -103,14 +117,35 @@ const characteristics = [
   { value: 'descriptive', label: 'Descriptive' },
 ]
 
+const getSuggestedTitle = async () => {
+  if (localTitle.value) {
+    try {
+      const response = await $fetch('/api/essay/title', {
+        method: 'POST',
+        body: { topic: localTitle.value },
+      })
+      suggestedTitle.value = response
+    } catch (error) {
+      console.error('Error fetching suggested title:', error)
+    }
+  }
+}
+
+const debouncedGetSuggestedTitle = useDebounceFn(getSuggestedTitle, 2000)
+
+const setTitle = (newTitle: string) => {
+  localTitle.value = newTitle
+  suggestedTitle.value = ''
+}
+
 const generateOutline = async () => {
-  if (localTopic.value && selectedLanguage.value && selectedCharacteristic.value) {
+  if (localTitle.value && selectedLanguage.value && selectedCharacteristic.value) {
     try {
       // Clear any existing essay data
       essayStore.clearEssay()
 
       essayStore.setDocumentType('essay')
-      essayStore.setTopic(localTopic.value)
+      essayStore.setTitle(localTitle.value) // Use title instead of topic
       essayStore.setLanguage(selectedLanguage.value)
       essayStore.setCharacteristic(selectedCharacteristic.value)
       essayStore.setUseWebSearch(localUseWebSearch.value)

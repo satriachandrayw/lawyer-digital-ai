@@ -29,7 +29,7 @@ const generateDefaultOptionsOnline = () => ({
 
 export const processGenerateWithPerplexityStreamOnline = async (messages: CoreMessage[], options = {}) => {
   const defaultOptions = generateDefaultOptionsOnline()
-  defaultOptions.temperature = 0.8
+  defaultOptions.temperature = 0.6
   defaultOptions.stream = true
 
   const mergedOptions = { ...defaultOptions, ...options, messages }
@@ -47,7 +47,7 @@ export const processGenerateWithPerplexityStreamOnline = async (messages: CoreMe
 
 export const processWithPerplexityStreamOnline = async (messages: CoreMessage[], options = {}) => {
   const defaultOptions = generateDefaultOptionsOnline()
-  defaultOptions.temperature = 0.8
+  defaultOptions.temperature = 0.6
   defaultOptions.stream = true
 
   const mergedOptions = { ...defaultOptions, ...options, messages }
@@ -83,7 +83,7 @@ export const processWithOpenAI = async (messages: CoreMessage[], options = {}) =
 
 // New function for non-streaming response
 export const processWithOpenAIFull = async (messages: CoreMessage[], options = {}) => {
-  if (typeof messages !== 'string' || !messages) {
+  if (!messages) {
     throw new Error('Invalid input: text must be a non-empty string')
   }
 
@@ -110,7 +110,7 @@ export const processWithOpenAIFull = async (messages: CoreMessage[], options = {
 export const processWithOpenAIStream = async (messages: CoreMessage[], options = {}) => {
   const defaultOptions = generateDefaultOptions()
   defaultOptions.model = openrouter('google/gemini-pro-1.5')
-  defaultOptions.temperature = 0.8
+  defaultOptions.temperature = 0.6
   defaultOptions.stream = true
 
   const mergedOptions = { ...defaultOptions, ...options, messages }
@@ -128,7 +128,7 @@ export const processWithOpenAIStream = async (messages: CoreMessage[], options =
 
 export const processStructuredData = async (messages: CoreMessage[], options = {}) => {
   const defaultOptions = generateDefaultOptions()
-  defaultOptions.temperature = 0.8
+  defaultOptions.temperature = 0.6
   defaultOptions.stream = false
 
   const mergedOptions = { ...defaultOptions, ...options, messages }
@@ -147,7 +147,7 @@ export const processStructuredData = async (messages: CoreMessage[], options = {
 
 export const processStructureDataStreaming = async (messages: CoreMessage[], options = {}) => {
   const defaultOptions = generateDefaultOptions()
-  defaultOptions.temperature = 1.2
+  defaultOptions.temperature = 0.6
   defaultOptions.stream = true
 
   const mergedOptions = { ...defaultOptions, ...options, messages }

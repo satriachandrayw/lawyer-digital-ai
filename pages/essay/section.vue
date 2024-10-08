@@ -128,9 +128,8 @@ import type { Essay, Section } from '@/types/essay'
 const router = useRouter()
 const essayStore = useEssayStore()
 
-const { essay, topic, documentType, language, characteristic, useWebSearch } = storeToRefs(essayStore) as {
+const { essay, documentType, language, characteristic, useWebSearch } = storeToRefs(essayStore) as {
   essay: Ref<Essay>
-  topic: Ref<string>
   documentType: Ref<string>
   language: Ref<string>
   characteristic: Ref<string>
@@ -138,7 +137,6 @@ const { essay, topic, documentType, language, characteristic, useWebSearch } = s
 }
 
 const localEssay = ref<Essay>(essayStore.essay)
-const localTopic = ref(essayStore.topic)
 const localDocumentType = ref(essayStore.documentType)
 const localUseWebSearch = ref(useWebSearch.value)
 
@@ -165,7 +163,7 @@ const updateLocalEssay = (parsedData: any) => {
   if (parsedData.essay) {
     localEssay.value = {
       ...localEssay.value,
-      title: parsedData.essay.title || localEssay.value.title,
+      title: localEssay.value.title,
       sections: parsedData.essay.sections?.map((section: Section) => ({
         ...section,
         editing: false,
@@ -175,7 +173,6 @@ const updateLocalEssay = (parsedData: any) => {
     }
   }
   if (parsedData.sections?.index) {
-    console.log(parsedData.sections)
 
     localEssay.value.sections[parsedData.sections.index - 1] = {
     // ...localEssay.value.sections[parsedData.sections.index - 1],
@@ -214,7 +211,7 @@ const updateSectionTitle = async (section: Section) => {
 const fetchSection = async () => {
   isLoading.value = true
   try {
-    await completeStructure(localTopic.value, {
+    await completeStructure(localEssay.value.title, {
       body: {
         documentType: localDocumentType.value,
         language: language.value,
@@ -238,7 +235,7 @@ const fetchSection = async () => {
 const regenerateSection = async (index: number) => {
   localEssay.value.sections[index].isRegenerating = true
   try {
-    await completeSection(localTopic.value, {
+    await completeSection(localEssay.value.title, {
       body: {
         documentType: localDocumentType.value,
         language: language.value,
@@ -272,7 +269,6 @@ const isAnyRegenerating = computed(() => localEssay.value.sections.some(section 
 
 const goToEdit = () => {
   essay.value = localEssay.value
-  topic.value = localTopic.value
   documentType.value = localDocumentType.value
 
   router.push(`/essay/content`)

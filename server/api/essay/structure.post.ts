@@ -23,19 +23,19 @@ const journalSchema = z.object({
   }),
 })
 
-const getSchemaAndMessage = (documentType: string, language: string, characteristic: string, text: string, searchContext?: string) => {
+const getSchemaAndMessage = (documentType: string, language: string, characteristic: string, title: string, searchContext?: string) => {
   let schema
   let message
 
   if (documentType === 'essay') {
     schema = essaySchema
-    message = essayStructureMessage(text, language, characteristic, searchContext)
+    message = essayStructureMessage(title, language, characteristic, searchContext)
   }
   else if (documentType === 'journal') {
     schema = journalSchema
     message = [
       { role: 'system', content: 'You are an expert journal paper writer assistant In Bahasa Indonesia.' },
-      { role: 'user', content: `Extract a journal paper research format (like abstract, intro, methods, etc.) based on the topic: "${text}"` },
+      { role: 'user', content: `Extract a journal paper research format (like abstract, intro, methods, etc.) based on the title: "${title}"` },
     ]
   }
   else {
@@ -55,7 +55,7 @@ export default defineEventHandler(async (event) => {
   if (!prompt || !documentType) {
     throw createError({
       statusCode: 400,
-      statusMessage: 'Topic and document type are required',
+      statusMessage: 'Title and document type are required',
     })
   }
 
@@ -67,7 +67,6 @@ export default defineEventHandler(async (event) => {
     const { schema, message } = getSchemaAndMessage(documentType, language, characteristic, prompt, searchContext)
     stream = await processStructureDataStreaming(message, { schema })
   }
-
   else {
     const { schema, message } = getSchemaAndMessage(documentType, language, characteristic, prompt)
     stream = await processStructureDataStreaming(message, { schema })

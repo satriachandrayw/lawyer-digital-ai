@@ -120,7 +120,7 @@ import type { Essay } from '@/types/essay'
 
 const router = useRouter()
 const essayStore = useEssayStore()
-const { essay, topic, language, characteristic, useWebSearch } = storeToRefs(essayStore) as { essay: Ref<Essay>, topic: Ref<string>, language: Ref<string>, characteristic: Ref<string>, useWebSearch: Ref<boolean> }
+const { essay, language, characteristic, useWebSearch } = storeToRefs(essayStore) as { essay: Ref<Essay>, language: Ref<string>, characteristic: Ref<string>, useWebSearch: Ref<boolean> }
 
 const localEssay = ref<Essay>(essay.value)
 
@@ -163,7 +163,7 @@ const generateContent = async (index: number) => {
   try {
     await complete(localEssay.value.sections[index].title, {
       body: {
-        topic: topic.value,
+        title: localEssay.value.title,
         language: language.value,
         characteristic: characteristic.value,
         useWebSearch: useWebSearch.value,
