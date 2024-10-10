@@ -3,7 +3,7 @@
     <div
       class="absolute top-0 left-0 h-full bg-primary transition-all duration-300 ease-in-out"
       :style="{ width: `${value}%` }"
-    ></div>
+    />
   </div>
 </template>
 

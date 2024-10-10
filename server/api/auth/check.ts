@@ -16,7 +16,8 @@ export default defineEventHandler(async (event) => {
   try {
     const { data: { user } } = await supabase.auth.getUser(token)
     return { authenticated: !!user }
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error checking authentication:', error)
     return { authenticated: false }
   }

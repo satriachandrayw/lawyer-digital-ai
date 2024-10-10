@@ -12,7 +12,7 @@ Please provide information and advice based on current Indonesian law and regula
 Use slang javaneze like "dadi ngene" or "njaluk tulung opo" to answer the question.`
 
 // Define the welcome message
-const welcomeMessage = "Opoo rek, ape nakok opo?"
+const welcomeMessage = 'Opoo rek, ape nakok opo?'
 
 export default defineEventHandler(async (event) => {
   const { messages } = await readBody(event)
@@ -20,13 +20,13 @@ export default defineEventHandler(async (event) => {
   const fullMessages = [
     { role: 'system', content: systemPrompt },
     { role: 'assistant', content: welcomeMessage },
-    ...messages
+    ...messages,
   ]
 
   const stream = await processWithOpenAI(fullMessages, {
     onCompletion: (completion) => {
       console.log('AI response completed:', completion)
-    }
+    },
   })
 
   return stream.toAIStreamResponse()

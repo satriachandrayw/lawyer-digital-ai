@@ -2,25 +2,25 @@ export const cleanIndonesianText = (text: string): string => {
   return text
     .replace(/\s+/g, ' ')
     .replace(/[""]/g, '"')
-    .replace(/['']/g, "'")
+    .replace(/['']/g, '\'')
     .trim()
 }
 
 export const splitTextIntoChunks = (text: string, maxChunkSize: number = 4000): string[] => {
-  const chunks: string[] = [];
-  let currentChunk = '';
+  const chunks: string[] = []
+  let currentChunk = ''
 
-  text.split('\n').forEach(paragraph => {
+  text.split('\n').forEach((paragraph) => {
     if (currentChunk.length + paragraph.length > maxChunkSize) {
-      chunks.push(currentChunk.trim());
-      currentChunk = '';
+      chunks.push(currentChunk.trim())
+      currentChunk = ''
     }
-    currentChunk += paragraph + '\n';
-  });
+    currentChunk += paragraph + '\n'
+  })
 
   if (currentChunk.trim()) {
-    chunks.push(currentChunk.trim());
+    chunks.push(currentChunk.trim())
   }
 
-  return chunks;
-};
+  return chunks
+}

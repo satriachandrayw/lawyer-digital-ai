@@ -1,13 +1,13 @@
 import { defineEventHandler, readBody } from 'h3'
 
 import { processWithOpenAIStream } from './openaiService'
-import { responGugatanMessage } from '@/constants/prompt';
+import { responGugatanMessage } from '@/constants/prompt'
 
-export const maxDuration = 300; // Increased to 5 minutes
+export const maxDuration = 300 // Increased to 5 minutes
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
-  console.log("Received body")
+  console.log('Received body')
 
   if (!body || (!body.prompt && !body.finalize)) {
     throw createError({
@@ -18,14 +18,15 @@ export default defineEventHandler(async (event) => {
 
   try {
     if (body.finalize) {
-      console.log("Finalizing processing")
+      console.log('Finalizing processing')
 
-      const messages = responGugatanMessage(body.prompt);
+      const messages = responGugatanMessage(body.prompt)
       const stream = await processWithOpenAIStream(messages)
-      
+
       return stream.toDataStreamResponse()
     }
-  } catch (error) {
+  }
+  catch (error) {
     console.error('Error processing text:', error)
     throw createError({
       statusCode: 500,

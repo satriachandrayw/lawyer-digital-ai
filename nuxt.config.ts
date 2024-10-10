@@ -13,16 +13,17 @@ export default defineNuxtConfig({
   },
   alias: {
     '@': fileURLToPath(new URL('./', import.meta.url)),
-    'pdfjs-dist': 'pdfjs-dist/build/pdf.js'
+    'pdfjs-dist': 'pdfjs-dist/build/pdf.js',
   },
   modules: [
     '@nuxtjs/color-mode',
     'shadcn-nuxt',
     '@pinia/nuxt',
-    '@nuxtjs/supabase'
+    '@nuxtjs/supabase',
+    '@nuxt/eslint',
   ],
   colorMode: {
-    classSuffix: ''
+    classSuffix: '',
   },
   shadcn: {
     /**
@@ -33,7 +34,7 @@ export default defineNuxtConfig({
      * Directory that the component lives in.
      * @default "./components/ui"
      */
-    componentDir: './components/ui'
+    componentDir: './components/ui',
   },
   runtimeConfig: {
     openrouterApiKey: process.env.OPENROUTER_API_KEY,
@@ -41,48 +42,59 @@ export default defineNuxtConfig({
     supabaseAnonKey: process.env.SUPABASE_KEY,
     supabaseServiceKey: process.env.SUPABASE_SERVICE_KEY,
     public: {
-      siteUrl: process.env.SITE_URL
-    }
+      siteUrl: process.env.SITE_URL,
+    },
   },
   nitro: {
     storage: {
+      redis: {
+        driver: 'vercelKV',
+        url: process.env.KV_REST_API_URL,
+        token: process.env.KV_REST_API_TOKEN,
+        base: 'test'
+      },
       uploads: {
         driver: 'fs',
-        base: './uploads'
-      }
-    }
+        base: './uploads',
+      },
+    },
   },
   build: {
-    transpile: ['pdfjs-dist', '@tiptap/vue-3']
+    transpile: ['pdfjs-dist', '@tiptap/vue-3'],
   },
   vite: {
     optimizeDeps: {
-      include: ['pdfjs-dist', 
+      include: ['pdfjs-dist',
         'prosemirror-state',
         'prosemirror-transform',
         'prosemirror-model',
-        'prosemirror-view'
-      ]
+        'prosemirror-view',
+      ],
     },
     plugins: [
       VitePluginCommonjs({
-        filter: (id) => id.includes('pdfjs-dist')
-      })
+        filter: id => id.includes('pdfjs-dist'),
+      }),
     ],
     server: {
       watch: {
-        usePolling: true
-      }
-    }
+        usePolling: true,
+      },
+    },
   },
   plugins: [
     { src: '~/plugins/quill.client.ts', mode: 'client' },
-    { src: '~/plugins/html2pdf.client.ts', mode: 'client' }
+    { src: '~/plugins/html2pdf.client.ts', mode: 'client' },
   ],
-  supabase:{
-    redirectOptions:{
+  supabase: {
+    redirectOptions: {
       login: '/login',
-      include: ['/essay(/*)?']
-    }
-  }
+      include: ['/essay(/*)?'],
+    },
+  },
+  eslint: {
+    config: {
+      stylistic: true,
+    },
+  },
 })

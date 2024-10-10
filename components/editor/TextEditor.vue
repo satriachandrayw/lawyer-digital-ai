@@ -1,26 +1,41 @@
 <template>
   <div class="editor-wrapper">
     <editor-content :editor="editor" />
-    <bubble-menu :editor="editor" v-if="editor">
+    <bubble-menu
+      v-if="editor"
+      :editor="editor"
+    >
       <div class="bubble-menu">
-        <button @click="editor.chain().focus().toggleBold().run()" :class="{ 'is-active': editor.isActive('bold') }">
+        <button
+          :class="{ 'is-active': editor.isActive('bold') }"
+          @click="editor.chain().focus().toggleBold().run()"
+        >
           Bold
         </button>
-        <button @click="editor.chain().focus().toggleItalic().run()" :class="{ 'is-active': editor.isActive('italic') }">
+        <button
+          :class="{ 'is-active': editor.isActive('italic') }"
+          @click="editor.chain().focus().toggleItalic().run()"
+        >
           Italic
         </button>
-        <button @click="editor.chain().focus().toggleStrike().run()" :class="{ 'is-active': editor.isActive('strike') }">
+        <button
+          :class="{ 'is-active': editor.isActive('strike') }"
+          @click="editor.chain().focus().toggleStrike().run()"
+        >
           Strike
         </button>
-        <button 
-          v-for="level in [1, 2, 3]" 
+        <button
+          v-for="level in [1, 2, 3]"
           :key="level"
-          @click="editor.chain().focus().toggleHeading({ level }).run()"
           :class="{ 'is-active': editor.isActive('heading', { level }) }"
+          @click="editor.chain().focus().toggleHeading({ level }).run()"
         >
           H{{ level }}
         </button>
-        <button @click="editor.chain().focus().setParagraph().run()" :class="{ 'is-active': editor.isActive('paragraph') }">
+        <button
+          :class="{ 'is-active': editor.isActive('paragraph') }"
+          @click="editor.chain().focus().setParagraph().run()"
+        >
           Paragraph
         </button>
       </div>
@@ -29,41 +44,38 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue';
-import { useEditor, EditorContent, BubbleMenu } from '@tiptap/vue-3';
-import StarterKit from '@tiptap/starter-kit';
-import Heading from '@tiptap/extension-heading';
+import { ref, onMounted, watch } from 'vue'
+import { useEditor, EditorContent, BubbleMenu } from '@tiptap/vue-3'
+import StarterKit from '@tiptap/starter-kit'
+import Heading from '@tiptap/extension-heading'
 
 const props = defineProps({
   modelValue: {
     type: String,
-    default: '<p>Start typing...</p>'
-  }
-});
+    default: '<p>Start typing...</p>',
+  },
+})
 
-const emit = defineEmits(['update:modelValue']);
+const emit = defineEmits(['update:modelValue'])
 
 const editor = useEditor({
   content: props.modelValue,
   extensions: [
-    StarterKit,
-    Heading.configure({
-      levels: [1, 2, 3]
-    }),
+    StarterKit
   ],
   onUpdate: ({ editor }) => {
-    emit('update:modelValue', editor.getHTML());
+    emit('update:modelValue', editor.getHTML())
   },
-});
+})
 
 watch(() => props.modelValue, (newContent) => {
   if (editor.value && newContent !== editor.value.getHTML()) {
-    editor.value.commands.setContent(newContent, false);
+    editor.value.commands.setContent(newContent, false)
   }
-});
+})
 
 // Expose the Tiptap editor instance
-defineExpose({ editor });
+defineExpose({ editor })
 </script>
 
 <style>
@@ -107,5 +119,4 @@ defineExpose({ editor });
   opacity: 1;
   background-color: rgba(255, 255, 255, 0.1);
 }
-
 </style>

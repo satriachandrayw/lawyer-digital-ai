@@ -4,7 +4,7 @@ import { useCompletion } from '@ai-sdk/vue'
 import { createWorker, createScheduler } from 'tesseract.js'
 
 import { cleanIndonesianText } from '@/utils/text'
-import type { AIProcessingResult } from '@/types/aiProcessing' 
+import type { AIProcessingResult } from '@/types/aiProcessing'
 
 let worker: Tesseract.Worker | null = null
 
@@ -53,7 +53,7 @@ export const useAIProcessing = (): AIProcessingResult => {
 
       const arrayBuffer = await file.arrayBuffer()
       const pdf = await pdfjs.getDocument({ data: arrayBuffer }).promise
-      
+
       const scheduler = createScheduler()
       const worker = await getWorker()
       scheduler.addWorker(worker)
@@ -72,13 +72,14 @@ export const useAIProcessing = (): AIProcessingResult => {
           canvas.width = viewport.width
 
           await page.render({ canvasContext: context, viewport }).promise
-          
+
           const dataUrl = canvas.toDataURL('image/png')
-          
+
           const { data: { text: pageText } } = await scheduler.addJob('recognize', dataUrl)
-          
+
           return cleanIndonesianText(pageText)
-        } catch (error) {
+        }
+        catch (error) {
           console.error(`Error processing page ${pageNum}:`, error)
           return ''
         }
@@ -99,8 +100,8 @@ export const useAIProcessing = (): AIProcessingResult => {
       isProcessing.value = false
       processState.value = 'Waiting AI Response'
       await complete(fullText.value, { body: { finalize: true } })
-
-    } catch (error) {
+    }
+    catch (error) {
       console.error('Error processing PDF:', error)
       throw error
     }
@@ -112,6 +113,6 @@ export const useAIProcessing = (): AIProcessingResult => {
     processFile,
     progress: displayProgress,
     isLoading,
-    processState
+    processState,
   }
 }

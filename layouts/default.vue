@@ -4,7 +4,7 @@
       <!-- <div class="absolute top-4 right-4 z-50">
     <Button
       id="color-mode-toggle"
-      @click="toggleColorMode"  
+      @click="toggleColorMode"
       variant="default"
       size="sm"
     >
@@ -23,5 +23,4 @@ import { useColorMode } from '@vueuse/core'
 import { Button } from '@/components/ui/button'
 
 const colorMode = useColorMode()
-
 </script>
