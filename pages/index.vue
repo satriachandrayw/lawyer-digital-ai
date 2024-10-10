@@ -22,14 +22,14 @@
       <section class="flex-grow flex flex-col justify-center items-center text-center px-4 min-h-screen">
         <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold mb-4">
           <v-typical
-            :steps="['Craft Compelling Essays', 1000, 'Generate Insightful Articles', 1000, 'Elevate Your Writing', 1000]"
+            :steps="['Justice at Hand', 1000, 'Law Simplified Here', 1000, 'Right Made Easy', 1000]"
             :loop="Infinity"
             :wrapper="'h1'"
             class="blink"
           />
         </h1>
         <p class="text-xl md:text-2xl mb-8">
-          Your ultimate writing assistant
+          Your ultimate law assistant
         </p>
         <Button
           size="lg"
