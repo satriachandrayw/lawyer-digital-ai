@@ -21,6 +21,8 @@ const runtimeConfig = useRuntimeConfig()
 const { auth } = useSupabaseClient()
 
 const signInWithGoogle = async () => {
+  console.log(runtimeConfig.public.siteUrl);
+  
   try {
     await auth.signInWithOAuth({
       provider: 'google',
