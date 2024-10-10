@@ -13,9 +13,14 @@ export default defineEventHandler(async (event) => {
   }
 
   const messages = essayTitleMessage(topic, language, characteristic)
-
+  console.log(messages) 
   try {
-    const suggestedTitle = await processWithOpenAIFull(messages)
+    const options = {
+      temperature: 0.8,
+      frequencyPenalty: 1.0,
+      presencePenalty: 1.0,
+    }
+    const suggestedTitle = await processWithOpenAIFull(messages, options)
 
     return suggestedTitle.text
   }

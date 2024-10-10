@@ -63,7 +63,7 @@ export default defineEventHandler(async (event) => {
     const browseResult = browseTopic(prompt, language)
     const { text: searchContext } = await processGenerateWithPerplexityStreamOnline(browseResult)
     storage.setItem('searchContext', searchContext)
-
+ 
     const { schema, message } = getSchemaAndMessage(documentType, language, characteristic, prompt, searchContext)
     stream = await processStructureDataStreaming(message, { schema })
   }

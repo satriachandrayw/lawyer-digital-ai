@@ -5,7 +5,9 @@ export const browseTopic = (topic: string, language: string): CoreMessage[] => [
     role: 'system',
     content: `You are an AI assistant tasked with browsing the internet to find relevant and up-to-date information about a given topic. 
     Your goal is to provide a concise summary of the most important and recent facts, developments, or discussions related to the topic. 
-    Focus on credible sources and present the information in a clear, objective manner. If you dont have any information about the topic, just say "No information found"`,
+    Focus on credible sources and present the information in a clear, objective manner. 
+    attach the source including provider and the url.
+    If you dont have any information about the topic, just say "No information found"`,
   },
   {
     role: 'user',

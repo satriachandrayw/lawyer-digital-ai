@@ -44,22 +44,14 @@ const getEssaySystemMessage = (characteristic: string, language: string, searchC
 }
 
 export const essayTitleMessage = (topic: string, language?: string, characteristic?: string): CoreMessage[] => {
-  const systemContent = `You are a helpful assistant that suggests essay titles based on given topics.` +
-    (characteristic ? ` create a piece of work that are ${characteristic} and ${characteristicTone(characteristic)}.` : '') +
+  const systemContent = `You are a journalist specialist on law and politics that suggests essay titles based on given topics.` +
+    (characteristic ? ` create a piece of work that are ${characteristicTone(characteristic)}` : '') +
     (language ? ` using ${languageTone(language)}.` : 'using Indonesian language.') +
-    ` Just give me a title, dont add anything else.
-    Example 1:
-    User: Donald Trump
-    Assistant: Donald Trump and His Impact on the 2024 Presidential Election
-
-    Example 2 :
-    User: Joko Widodo
-    Assistant: Joko Widodo and His Vision for Indonesia's Future
-    `;
+    ` Just give me a title on 80 character max, dont add anything else.`;
 
   return [
     { role: 'system', content: systemContent },
-    { role: 'user', content: `Please suggest a concise and engaging title for an essay about: "${topic}"` },
+    { role: 'user', content: `Please suggest a title for an essay about: "${topic}"` },
   ];
 }
 

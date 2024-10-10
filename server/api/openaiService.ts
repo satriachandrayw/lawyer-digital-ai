@@ -19,6 +19,14 @@ const generateDefaultOptions = () => ({
   },
 })
 
+const generateDefaultOptionsGemini = () => ({
+  model: openrouter('google/gemini-flash-1.5'),
+  headers: {
+    'HTTP-Referer': 'https://your-site.com',
+    'X-Title': 'Asisten Hukum Indonesia',
+  },
+})
+
 const generateDefaultOptionsOnline = () => ({
   model: openrouter('perplexity/llama-3.1-sonar-small-128k-online'),
   headers: {
@@ -66,7 +74,7 @@ export const processWithPerplexityStreamOnline = async (messages: CoreMessage[],
 export const processWithOpenAI = async (messages: CoreMessage[], options = {}) => {
   const defaultOptions = generateDefaultOptions()
   defaultOptions.stream = true
-  defaultOptions.temperature = 0.7
+
 
   messages.unshift({
     role: 'system',
@@ -118,7 +126,7 @@ export const processWithOpenAIStream = async (messages: CoreMessage[], options =
 
   try {
     const response = await streamText(mergedOptions)
-
+    
     return response
   }
   catch (error) {

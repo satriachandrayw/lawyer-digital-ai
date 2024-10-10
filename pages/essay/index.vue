@@ -135,7 +135,7 @@ const getSuggestedTitle = async () => {
   }
 }
 
-const debouncedGetSuggestedTitle = useDebounceFn(getSuggestedTitle, 2000)
+const debouncedGetSuggestedTitle = useDebounceFn(getSuggestedTitle, 1000)
 
 watch([selectedLanguage, selectedCharacteristic], () => {
   debouncedGetSuggestedTitle()
