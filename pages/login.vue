@@ -27,7 +27,7 @@ const signInWithGoogle = async () => {
     await auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${runtimeConfig.public.siteUrl}/redirect`,
+        redirectTo: `https://lawyer-digital-ai-git-development-satriachandrayws-projects.vercel.app//redirect`,
       },
     })
   }
