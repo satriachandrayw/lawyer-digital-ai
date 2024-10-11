@@ -1,10 +1,11 @@
 import { defineEventHandler, readBody } from 'h3'
 import { z } from 'zod'
 import type { CoreMessage } from 'ai'
-import { processStructureDataStreaming } from '../openaiService'
+import { processGenerateWithPerplexityStreamOnline, processStructureDataStreaming } from '../openaiService'
 import { essaySectionMessage } from '@/constants/essayPrompts' 
 
 import type { Section, EssaySectionResponse } from '@/types/essay'
+import { browseTopicWithSection } from '~/constants/browsePrompts'
 
 const sectionSchema: z.ZodType<Section> = z.object({
   index: z.number().describe('Section index'),
@@ -33,7 +34,8 @@ export default defineEventHandler(async (event) => {
 
   try {
     if (useWebSearch) {
-      const searchContext: string | null = await storage.getItem('searchContext')
+      const browseResult = browseTopicWithSection(prompt, currentSections[sectionIndex].title, language)
+      const { text: searchContext } = await processGenerateWithPerplexityStreamOnline(browseResult)
       messages = essaySectionMessage(title, documentType, language, characteristic, sectionIndex, currentSections, draftEssay, searchContext)
     }
     else {

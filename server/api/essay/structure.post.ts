@@ -45,6 +45,16 @@ const getSchemaAndMessage = (documentType: string, language: string, characteris
   return { schema, message }
 }
 
+// const sequentialActions = async (prompt: string, language: string, characteristic: string) => {
+//   const browseResult = browseTopic(prompt, language)
+//   const { text: searchContext } = await processGenerateWithPerplexityStreamOnline(browseResult)
+
+//   const { schema, message } = getSchemaAndMessage(documentType, language, characteristic, prompt, searchContext)
+//   stream = await processStructureDataStreaming(message, { schema })
+
+//   return stream;
+// }
+
 export default defineEventHandler(async (event) => {
   let stream
 
@@ -60,9 +70,14 @@ export default defineEventHandler(async (event) => {
   }
 
   if (useWebSearch) {
+    // TODO: Bikin keywords
+
+    // TODO: cari konteks dari web search based on keywords
     const browseResult = browseTopic(prompt, language)
     const { text: searchContext } = await processGenerateWithPerplexityStreamOnline(browseResult)
-    storage.setItem('searchContext', searchContext)
+    console.log(`searchContext Structure: ${searchContext}`);
+    
+    // storage.setItem('searchContext', searchContext)
  
     const { schema, message } = getSchemaAndMessage(documentType, language, characteristic, prompt, searchContext)
     stream = await processStructureDataStreaming(message, { schema })

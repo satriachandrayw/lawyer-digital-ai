@@ -18,7 +18,7 @@ const getEssaySystemMessage = (characteristic: string, language: string, searchC
       2. body
       the body contains the main content of the essay, it is the most important part of the essay.
       it consist of different section, each section is a paragraph that is related to each other.
-      the section explain the topic in detail based  on the section title itself.
+      the section explain the topic in detail based on the section title itself.
       use the context from internet research to enrich your essay only if it is relevant to the section you are writing.
       dont use the context if it not correlated with the section you are writing.
       3. conclusion
@@ -30,11 +30,12 @@ const getEssaySystemMessage = (characteristic: string, language: string, searchC
       ${draftEssay}
       \`
       use the draft for generating or updating section you are writing, ensuring consistency and coherence with the existing content.
-      dont write the same content from the draft.
+      please review whether each sentence is grammatically correct, make sense, not duplicate words and not redundant.
       ` : '') +
       `
       formulate a thesis statement using ${languageTone(language)}, 
       and create a piece of work that are ${characteristic} and ${characteristicTone(characteristic)}.
+      please review whether each sentence is grammatically correct, make sense, not duplicate words and not redundant.
       `
     : 
     `I want you to act as an essay writer. 
@@ -44,7 +45,7 @@ const getEssaySystemMessage = (characteristic: string, language: string, searchC
 }
 
 export const essayTitleMessage = (topic: string, language?: string, characteristic?: string): CoreMessage[] => {
-  const systemContent = `You are a journalist specialist on law and politics that suggests essay titles based on given topics.` +
+  const systemContent = `You are Ahlihukum, a journalist specialist on law and politics that suggests essay titles based on given topics.` +
     (characteristic ? ` create a piece of work that are ${characteristicTone(characteristic)}` : '') +
     (language ? ` using ${languageTone(language)}.` : 'using Indonesian language.') +
     ` Just give me a title on 80 character max, dont add anything else.`;

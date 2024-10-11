@@ -3,37 +3,29 @@ import type { CoreMessage } from "ai"
 export const browseTopic = (topic: string, language: string): CoreMessage[] => [
   {
     role: 'system',
-    content: `You are an AI assistant tasked with browsing the internet to find relevant and up-to-date information about a given topic. 
-    Your goal is to provide a concise summary of the most important and recent facts, developments, or discussions related to the topic. 
-    Focus on credible sources and present the information in a clear, objective manner. 
-    attach the source including provider and the url.
-    If you dont have any information about the topic, just say "No information found"`,
+    content: `As an AI assistant, your task is to browse the internet for up-to-date, credible information about a given topic. 
+    Provide comprehensive, recent facts, developments, or discussions related to the topic in a clear, objective manner, including source citations. 
+    If no information is found, state "No information found".`,
   },
   {
     role: 'user',
-    content: `Please browse the internet and provide a summary of the most relevant and recent information about the following topic: "${topic}". 
-    Include key facts, recent developments, and any significant discussions or debates surrounding this topic. 
-    Just directly provide the summary in ${language}.`,
+    content: `Please browse the internet following the topic: "${topic}". 
+    Just directly provide the information in ${language}.`,
   },
 ]
 
 export const browseTopicWithSection = (topic: string, section: string, language: string): CoreMessage[] => [
   {
     role: 'system',
-    content: `You are an AI assistant tasked with browsing the internet to find relevant
-    and up-to-date information about a specific section of a given topic. 
-    Your goal is to provide a concise summary of the most important and recent facts, 
-    developments, or discussions related to the specified section of the topic. 
-    Focus on credible sources and present the information in a clear, objective manner.`,
+    content: `As an AI assistant, your task is to browse the internet for up-to-date comprehensive information about 
+    a specific section of a given topic. Provide the most important and recent facts, developments, 
+    or discussions related to the specified section. 
+    Use credible sources and present the information clearly and objectively, including source citations.`,
   },
   {
     role: 'user',
-    content: `Please browse the internet and provide a summary of the most relevant 
-    and recent information about the following section of the topic: "${section}" 
+    content: `Please browse the internet about the following section of the topic: "${section}" 
     within "${topic}". 
-    Include key facts, recent developments, and any significant discussions or debates 
-    surrounding this section. 
-    Just directly provide the summary in ${language}. 
-    Dont provide any information if you dont have any information about the topic.`,
+    Just directly provide the information in ${language}.`,
   },
 ]
